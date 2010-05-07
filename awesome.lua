@@ -67,8 +67,8 @@ local layouts =
     -- awful.layout.suit.spiral,
     -- awful.layout.suit.spiral.dwindle,
     awful.layout.suit.floating,           -- 5
-    awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
+    awful.layout.suit.max,                -- 7
+    awful.layout.suit.max.fullscreen,     -- 8
     -- awful.layout.suit.magnifier,
 }
 -- }}}
@@ -84,10 +84,9 @@ end
 -- }}}
 
 -- {{{ MPD functions
-function mpc:get_stat()
+function mpc.get_stat(self)
   -- {{{ trim
   local function trim(text, maxlen)
-    -- important if field is unkown.
     if not text then return "NA"
     elseif maxlen and text:len() > maxlen then
       text = text:sub(1, maxlen - 3).."..."
@@ -111,21 +110,21 @@ function mpc:get_stat()
    local function naughty_notify(radio_on)
       local t
       if radio_on then
-	t = string.format("%s: %s",
-	markup.bold("Radio"),  trim(self.current.name))
+        t = string.format("%s: %s",
+        markup.bold("Radio"),  trim(self.current.name))
       else
-	t = string.format("%s: %s\n%s:  %s\n%s: %s",
-	markup.bold("Artist"), trim(self.current.artist),
-	markup.bold("Album"),  trim(self.current.album),
-	markup.bold("Title"),  trim(self.current.title))
+        t = string.format("%s: %s\n%s:  %s\n%s: %s",
+        markup.bold("Artist"), trim(self.current.artist),
+        markup.bold("Album"),  trim(self.current.album),
+        markup.bold("Title"),  trim(self.current.title))
       end
       naughty.notify ({
-	icon    = "/usr/share/pixmaps/sonata.png",
-	icon_size = 45,
-	opacity = 0.9,
-	timeout = 3,
-	text    = t,
-	margin  = 10, })
+        icon    = "/usr/share/pixmaps/sonata.png",
+        icon_size = 45,
+        opacity = 0.9,
+        timeout = 3,
+        text    = t,
+        margin  = 10, })
    end
    -- }}}
 
@@ -315,10 +314,16 @@ awful.widget.layout.margins[volumebar.widget] = { top = 2, bottom = 2 }
 vicious.cache(vicious.widgets.volume)
 do
    -- Set device name
-   local dev = "Master"
+   local chan = "Master"
    -- Register volume widgets
-   vicious.register(volumewidget, vicious.widgets.volume, "$1%", 5, dev)
-   vicious.register(volumebar,    vicious.widgets.volume, "$1",  5, dev)
+   vicious.register(volumebar,    vicious.widgets.volume, "$1",  5, chan)
+   vicious.register(volumewidget, vicious.widgets.volume,
+   function (widget, args)
+     if args[2] == "♩" then
+       volumebar:set_value(0)
+       return "0%"
+     else return args[1].."%" end
+   end, 5, chan)
    -- Add signal
    volumewidget:add_signal("update", function () vicious.force({ volumewidget, volumebar}) end)
    -- Register buttons and Signals
@@ -327,19 +332,19 @@ do
 
 	 awful.button({ }, 2,
    function ()
-     awful.util.spawn("amixer -q sset "..dev.." toggle")    -- middle click
+     awful.util.spawn("amixer -q sset "..chan.." toggle")    -- middle click
      volumewidget:emit_signal("update")
    end),
 
    awful.button({ }, 4,
    function ()
-     awful.util.spawn("amixer -q sset "..dev.." 5%+")       -- scroll up
+     awful.util.spawn("amixer -q sset "..chan.." 5%+")       -- scroll up
      volumewidget:emit_signal("update")
    end),
 
 	 awful.button({ }, 5,
    function ()
-     awful.util.spawn("amixer -q sset "..dev.." 5%-")       -- scroll down
+     awful.util.spawn("amixer -q sset "..chan.." 5%-")       -- scroll down
      volumewidget:emit_signal("update")
    end)
    ))
