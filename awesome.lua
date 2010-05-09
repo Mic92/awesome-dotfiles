@@ -110,21 +110,21 @@ function mpc.get_stat(self)
    local function naughty_notify(radio_on)
       local t
       if radio_on then
-        t = string.format("%s: %s",
-        markup.bold("Radio"),  trim(self.current.name))
+	t = string.format("%s: %s",
+	markup.bold("Radio"),  trim(self.current.name))
       else
-        t = string.format("%s: %s\n%s:  %s\n%s: %s",
-        markup.bold("Artist"), trim(self.current.artist),
-        markup.bold("Album"),  trim(self.current.album),
-        markup.bold("Title"),  trim(self.current.title))
+	t = string.format("%s: %s\n%s:  %s\n%s: %s",
+	markup.bold("Artist"), trim(self.current.artist),
+	markup.bold("Album"),  trim(self.current.album),
+	markup.bold("Title"),  trim(self.current.title))
       end
       naughty.notify ({
-        icon    = "/usr/share/pixmaps/sonata.png",
-        icon_size = 45,
-        opacity = 0.9,
-        timeout = 3,
-        text    = t,
-        margin  = 10, })
+	icon    = "/usr/share/pixmaps/sonata.png",
+	icon_size = 45,
+	opacity = 0.9,
+	timeout = 3,
+	text    = t,
+	margin  = 10, })
    end
    -- }}}
 
@@ -278,7 +278,7 @@ local clockicon_tooltip = awful.tooltip({
   objects = { clockicon },
   timer_function = function()
     local month, year = os.date('%m'), os.date('%Y')
-    return calendar.display(month, year, 2)
+    return calendar.display(month, year)
   end,
 })
 -- }}}
@@ -290,7 +290,7 @@ vicious.register(uptimewidget, vicious.widgets.uptime,
 function (widget, args)
    local t = string.format("/ %sd %sh %smin", args[1], args[2], args[3])
    if tonumber(args[4]) > 0.03 then
-     t = t.." <b>Load</b> "..args[4] 
+     t = t.." <b>Load</b> "..args[4]
    end
    return t
 end, 61)
@@ -366,9 +366,9 @@ function (widget, args)
     for i=2,#args do
       -- alerts, if system is stressed
       if args[i] > 90 then
-        args[i] = markup.fg("#FF5656", args[i]) -- light red
+	args[i] = markup.fg("#FF5656", args[i]) -- light red
       elseif args[i] > 70 then
-        args[i] = markup.fg("#AECF96", args[i]) -- light green
+	args[i] = markup.fg("#AECF96", args[i]) -- light green
       end
 
       -- append to list
@@ -461,7 +461,7 @@ vicious.register(pkgwidget, vicious.widgets.pkg,
 		       pkgicon.visible = false
 		    else
 		       pkgicon.visible = true
-		       return markup.title_urgent("<b>Updates</b> "..args[1]).." "
+		       return markup.urgent("<b>Updates</b> "..args[1]).." "
 		    end
 		  end, 180, "Arch" )
 
@@ -487,7 +487,7 @@ function(widget, args)
   local text = ""
   local name = { "Tageschau", "mobileMacs", "HoRads" }
   for i, name in ipairs(name) do
-    if args[i] > 0 then 
+    if args[i] > 0 then
       text = text..string.format("%s: %d ", name, args[i])
     end
   end
@@ -495,10 +495,10 @@ function(widget, args)
   newsicon.visible = (text ~= "")
   return text
 end, 180, { pattern = ".*.(mp[34]|ogg|m4a)$",
-	          paths   = { lib.."Tagesschau \(512x288\)",
-                      lib.."mobileMacs",
-		                  lib.."RadioTux GNU_Linux » HoRadS" }
-              }
+		  paths   = { lib.."Tagesschau \(512x288\)",
+		      lib.."mobileMacs",
+				  lib.."RadioTux GNU_Linux » HoRadS" }
+	      }
 )
 
 -- Register Buttons in all widget
@@ -592,7 +592,7 @@ for s = 1, screen.count() do
     -- Create a tasklist widget
     mytasklist[s] = awful.widget.tasklist(function(c)
 					      return awful.widget.tasklist.label.currenttags(c, s)
-              end, mytasklist.buttons)
+	      end, mytasklist.buttons)
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
@@ -602,9 +602,9 @@ for s = 1, screen.count() do
     -- Add widgets to the wibox - order matters
     mywibox[s].widgets = {
        {
-         mylauncher,
-         mytaglist[s],
-         layout = awful.widget.layout.horizontal.leftright
+	 mylauncher,
+	 mytaglist[s],
+	 layout = awful.widget.layout.horizontal.leftright
        },
        mylayoutbox[s],
        uptimewidget, mytextclock, clockicon,
@@ -616,12 +616,12 @@ for s = 1, screen.count() do
 
     mystatusbox[s].widgets = {
       {
-        testwidget,
-        cpuicon, cpuwidget,
-        memicon, memwidget,
-        downicon, netwidget, upicon,
-        iotextwidget, iowidget1, iowidget2,
-        layout = awful.widget.layout.horizontal.leftright
+	testwidget,
+	cpuicon, cpuwidget,
+	memicon, memwidget,
+	iotextwidget, iowidget1, iowidget2,
+	downicon, netwidget, upicon,
+	layout = awful.widget.layout.horizontal.leftright
       },
       pkgwidget, pkgicon,
       wimpc, mpcicon,
@@ -656,6 +656,8 @@ local globalkeys = awful.util.table.join(
     end),
     awful.key({ modkey,           }, "k",
     function ()
+      awful.client.focus.byidx(-1)
+      if client.focus then client.focus:raise() end
     end),
     -- awful.key({ modkey,           }, "w",       function() mymainmenu:show(true)        end),
     awful.key({ modkey            }, "Escape",  function() awful.tag.history.restore() end),    -- move to prev tag by history
@@ -820,8 +822,8 @@ client.add_signal("manage", function (c, startup)
     c:add_signal("mouse::enter",
     function(c)
       if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-        and awful.client.focus.filter(c) then
-        client.focus = c
+	and awful.client.focus.filter(c) then
+	client.focus = c
       end
     end)
 
@@ -832,8 +834,8 @@ client.add_signal("manage", function (c, startup)
 
       -- Put windows in a smart way, only if they does not set an initial position.
       if not c.size_hints.user_position and not c.size_hints.program_position then
-        awful.placement.no_overlap(c)
-        awful.placement.no_offscreen(c)
+	awful.placement.no_overlap(c)
+	awful.placement.no_offscreen(c)
       end
     end
 end)
