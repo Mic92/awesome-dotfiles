@@ -10,16 +10,16 @@ require("naughty")
 confdir = awful.util.getdir("config")
 local rc, err = loadfile(confdir .. "/awesome.lua");
 if rc then
-    rc, err = pcall(rc);
-    if rc then
-			return
-		else
-			dofile("/etc/xdg/awesome/rc.lua");
+	rc, err = pcall(rc);
+	if rc then
+		return
+	else
+		dofile("/etc/xdg/awesome/rc.lua");
 
-			-- usefull for debugging
-			naughty.notify {
-				text = string.format("Awesome crashed during startup on %s:\n\n%s", os.date(), awful.util.escape(err)),
-				timeout = 0 }
-		end
+		-- usefull for debugging
+		naughty.notify {
+			text = string.format("Awesome crashed during startup on %s:\n\n%s", os.date(), 
+			awful.util.escape(err)), timeout = 0 }
+	end
 end
 
