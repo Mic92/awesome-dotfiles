@@ -8,7 +8,7 @@
 -- screen: 1900x1080
 --------------------------------------------
 -- {{{ Awesome Library
-print("[awesome] Entered rc.lua: "..os.date())
+print("[awesome] Entered awesome.lua: "..os.date())
 
 require("awful")
 require("awful.autofocus")
@@ -236,32 +236,32 @@ shifty.modkey = modkey
 shifty.config.sloppy = true
 -- }}}
 
--- {{{ Menu
--- Create a laucher widget and a main menu
-myawesomemenu = {
-   { "manual", terminal .. " -e man awesome" },
-   { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/awesome.lua" },
-   { "restart", awesome.restart },
-   { "quit", awesome.quit }
+-- {{{ Menu 
+-- Create a laucher widget and a main menu 
+local myawesomemenu = { 
+  { "manual", terminal .. " -e man awesome" }, 
+  { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/awesome.lua" },
+  { "restart", awesome.restart },
+  { "quit", awesome.quit }
 }
 
 -- reboot/shutdown as user without security holes using HAL, make sure you using
 -- ck-launch-session to start awesome and you are in the power group.
-halrequest  = "dbus-send --system --print-reply \
-		  --dest=\"org.freedesktop.Hal\" \
-		  /org/freedesktop/Hal/devices/computer\
-		  org.freedesktop.Hal.Device.SystemPowerManagement."
+local request_template  = "dbus-send --system --print-reply \
+		                      --dest=\"org.freedesktop.Hal\" \
+                          /org/freedesktop/Hal/devices/computer\
+                          org.freedesktop.Hal.Device.SystemPowerManagement."
 
-mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
+local mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
 				    { "open terminal", terminal },
 				    { "Firefox", "firefox" },
 				    { "gnome-control", "gnome-control-center" },
-				    { "Neustarten", halrequest.."Reboot" },
-				    { "Herunterfahren", halrequest.."Shutdown", icon_path.."power.png" }
+				    { "Neustarten", request_template.."Reboot" },
+				    { "Herunterfahren", request_template.."Shutdown", icon_path.."power.png" }
 				  }
 				 })
 
-mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
+local mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
 				     menu = mymainmenu })
 -- }}}
 
@@ -289,7 +289,7 @@ local uptimewidget = widget({ type = "textbox" })
 vicious.register(uptimewidget, vicious.widgets.uptime,
 function (widget, args)
    local t = string.format("/ %sd %sh %smin", args[1], args[2], args[3])
-   if tonumber(args[4]) > 0.03 then
+   if tonumber(args[4]) > 0.10 then
      t = t.." <b>Load</b> "..args[4]
    end
    return t
@@ -301,6 +301,7 @@ local volumeicon = widget({ type = "imagebox" }); volumeicon.image = image(icon_
 -- Initialize widgets
 local volumewidget = widget({ type = "textbox" })
 local volumebar    = awful.widget.progressbar()
+
 -- Progressbar properties
 volumebar:set_width(8)
 volumebar:set_height(14)
@@ -312,43 +313,46 @@ volumebar:set_gradient_colors({ '#AECF96', '#88A175', '#FF5656' })
 awful.widget.layout.margins[volumebar.widget] = { top = 2, bottom = 2 }
 -- Enable caching
 vicious.cache(vicious.widgets.volume)
-do
-   -- Set device name
-   local chan = "Master"
-   -- Register volume widgets
-   vicious.register(volumebar,    vicious.widgets.volume, "$1",  5, chan)
-   vicious.register(volumewidget, vicious.widgets.volume,
-   function (widget, args)
-     if args[2] == "♩" then
-       volumebar:set_value(0)
-       return "0%"
-     else return args[1].."%" end
-   end, 5, chan)
-   -- Add signal
-   volumewidget:add_signal("update", function () vicious.force({ volumewidget, volumebar}) end)
-   -- Register buttons and Signals
-   volumebar.widget:buttons( awful.util.table.join(
-	 awful.button({ }, 1, function () awful.util.spawn("pavucontrol") end), -- left click
 
-	 awful.button({ }, 2,
-   function ()
-     awful.util.spawn("amixer -q sset "..chan.." toggle")    -- middle click
-     volumewidget:emit_signal("update")
-   end),
+-- Set device name
+local chan = "Master"
 
-   awful.button({ }, 4,
-   function ()
-     awful.util.spawn("amixer -q sset "..chan.." 5%+")       -- scroll up
-     volumewidget:emit_signal("update")
-   end),
+-- Register volume widgets
+vicious.register(volumebar,    vicious.widgets.volume, "$1",  5, chan)
+vicious.register(volumewidget, vicious.widgets.volume,
+function (widget, args)
+  if args[2] == "♩" then
+    volumebar:set_value(0)
+    return "Mute"
+  else return args[1].."%" end
+end, 5, chan)
+-- Add signal
+volumewidget:add_signal("update", function () 
+  vicious.force({ volumewidget, volumebar }) 
+end)
 
-	 awful.button({ }, 5,
-   function ()
-     awful.util.spawn("amixer -q sset "..chan.." 5%-")       -- scroll down
-     volumewidget:emit_signal("update")
-   end)
-   ))
-end
+-- Register buttons and Signals
+volumebar.widget:buttons( awful.util.table.join(
+awful.button({ }, 1, function () awful.util.spawn("pavucontrol") end), -- left click
+
+awful.button({ }, 2,
+function ()
+  awful.util.spawn("amixer -q sset "..chan.." toggle")    -- middle click
+  volumewidget:emit_signal("update")
+end),
+
+awful.button({ }, 4,
+function ()
+  awful.util.spawn("amixer -q sset "..chan.." 5%+")       -- scroll up
+  volumewidget:emit_signal("update")
+end),
+
+awful.button({ }, 5,
+function ()
+  awful.util.spawn("amixer -q sset "..chan.." 5%-")       -- scroll down
+  volumewidget:emit_signal("update")
+end)
+))
 volumewidget:buttons( volumebar.widget:buttons() )
 volumeicon:buttons( volumebar.widget:buttons() )
 -- }}}
@@ -591,8 +595,8 @@ for s = 1, screen.count() do
 
     -- Create a tasklist widget
     mytasklist[s] = awful.widget.tasklist(function(c)
-					      return awful.widget.tasklist.label.currenttags(c, s)
-	      end, mytasklist.buttons)
+      return awful.widget.tasklist.label.currenttags(c, s)
+    end, mytasklist.buttons)
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
@@ -602,9 +606,9 @@ for s = 1, screen.count() do
     -- Add widgets to the wibox - order matters
     mywibox[s].widgets = {
        {
-	 mylauncher,
-	 mytaglist[s],
-	 layout = awful.widget.layout.horizontal.leftright
+         mylauncher,
+         mytaglist[s],
+         layout = awful.widget.layout.horizontal.leftright
        },
        mylayoutbox[s],
        uptimewidget, mytextclock, clockicon,
@@ -616,12 +620,12 @@ for s = 1, screen.count() do
 
     mystatusbox[s].widgets = {
       {
-	testwidget,
-	cpuicon, cpuwidget,
-	memicon, memwidget,
-	iotextwidget, iowidget1, iowidget2,
-	downicon, netwidget, upicon,
-	layout = awful.widget.layout.horizontal.leftright
+        testwidget,
+        cpuicon, cpuwidget,
+        memicon, memwidget,
+        iotextwidget, iowidget1, iowidget2,
+        downicon, netwidget, upicon,
+        layout = awful.widget.layout.horizontal.leftright
       },
       pkgwidget, pkgicon,
       wimpc, mpcicon,
@@ -677,7 +681,7 @@ local globalkeys = awful.util.table.join(
     function ()
       awful.client.focus.history.previous()
       if client.focus then
-	client.focus:raise()
+        client.focus:raise()
       end
     end),
 
@@ -689,9 +693,9 @@ local globalkeys = awful.util.table.join(
 
     awful.key({ modkey, }, "b", function ()
        if mystatusbox[mouse.screen].screen == nil then
-	 mystatusbox[mouse.screen].screen = mouse.screen
+         mystatusbox[mouse.screen].screen = mouse.screen
        else
-	 mystatusbox[mouse.screen].screen = nil
+         mystatusbox[mouse.screen].screen = nil
        end
      end),
 
@@ -714,8 +718,13 @@ local globalkeys = awful.util.table.join(
 
     -- mpd control
     awful.key({ "Shift" }, "space", function () mpc:toggle_play() wimpc:emit_signal("update") end),
-    -- smplayer control
-    awful.key({ modkey2 }, "space", function () awful.util.spawn("smplayer -send-action play_or_pause") end),
+    -- Smplayer/Gnome control
+    awful.key({ modkey2 }, "space", function ()
+      local result = os.execute("smplayer -send-action play_or_pause") -- return 0 on succes
+      if result ~= 0 then
+        awful.util.spawn("dbus-send / com.gnome.mplayer.Play") -- if state is play it pause
+      end
+    end),
 
     -- easy way to share Screenshots over dropbox: The following code make a
     -- Screenshot open it with Eye of Gnome, copy it to dropbox and put the
