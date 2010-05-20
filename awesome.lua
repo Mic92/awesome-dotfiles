@@ -1,6 +1,6 @@
 --------------------------------------------
 -- awesome.lua - main config of my window manager
--- version: v3.4.4 (Jet Sex)
+-- version: v3.4.5 (Close To You)
 -- D-Bus support: x
 -- os: archlinux i686
 -- cpu: Intel Pentium Dual CPU E2180 2.00GHz
@@ -654,16 +654,16 @@ local globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
 
     awful.key({ modkey,           }, "j",
-    function ()
-      awful.client.focus.byidx( 1)
-	    if client.focus then client.focus:raise() end
-    end),
+        function ()
+            awful.client.focus.byidx( 1)
+            if client.focus then client.focus:raise() end
+        end),
     awful.key({ modkey,           }, "k",
-    function ()
-      awful.client.focus.byidx(-1)
-      if client.focus then client.focus:raise() end
-    end),
-    -- awful.key({ modkey,           }, "w",       function() mymainmenu:show(true)        end),
+        function ()
+            awful.client.focus.byidx(-1)
+            if client.focus then client.focus:raise() end
+        end),
+    -- awful.key({ modkey,           }, "w",       function() mymainmenu:show({keygrabber=true})        end),
     awful.key({ modkey            }, "Escape",  function() awful.tag.history.restore() end),    -- move to prev tag by history
     awful.key({ modkey, "Shift"   }, "n",       shifty.send_prev),                              -- move client to prev tag
     awful.key({ modkey            }, "n",       shifty.send_next),                              -- move client to next tag
@@ -678,12 +678,12 @@ local globalkeys = awful.util.table.join(
     awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end),
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
     awful.key({ modkey,           }, "Tab",
-    function ()
-      awful.client.focus.history.previous()
-      if client.focus then
-        client.focus:raise()
-      end
-    end),
+        function ()
+            awful.client.focus.history.previous()
+            if client.focus then
+                client.focus:raise()
+            end
+        end),
 
     -- move float clients without a mouse
     awful.key({ modkey, modkey2 }, "h", function () awful.client.moveresize(-20, 0, 0, 0) end),
@@ -760,14 +760,14 @@ local clientkeys = awful.util.table.join(
     awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
     awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
     awful.key({ modkey, "Shift"   }, "r",      function (c) c:redraw()                       end),
+    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end),
     awful.key({ modkey,           }, "n",      function (c) c.minimized = not c.minimized    end),
     awful.key({ modkey,           }, "m",
-	      function (c)
-		 c.maximized_horizontal = not c.maximized_horizontal
-		 c.maximized_vertical   = not c.maximized_vertical
-	      end)
+        function (c)
+            c.maximized_horizontal = not c.maximized_horizontal
+            c.maximized_vertical   = not c.maximized_vertical
+        end)
 )
-
 
 -- Compute the maximum number of digit we need, limited to 10
 local keystore = { 1, 2, 3, 4,
@@ -824,33 +824,33 @@ client.add_signal("manage", function (c, startup)
     -- Add a titlebar
     -- awful.titlebar.add(c, { modkey = modkey })
 
+    -- Enable sloppy focus
+    c:add_signal("mouse::enter", function(c)
+        if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
+            and awful.client.focus.filter(c) then
+            client.focus = c
+        end
+    end)
+
 		-- usefull for debugging
 	  -- naughty.notify( { title = 'Fenster', text = c.name, timeout = 5 } )
 
-		-- Enable sloppy focus
-    c:add_signal("mouse::enter",
-    function(c)
-      if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-	and awful.client.focus.filter(c) then
-	client.focus = c
-      end
-    end)
-
     if not startup then
-      -- Set the windows at the slave,
-      -- i.e. put it at the end of others instead of setting it master.
-      -- awful.client.setslave(c)
+        -- Set the windows at the slave,
+        -- i.e. put it at the end of others instead of setting it master.
+        -- awful.client.setslave(c)
 
-      -- Put windows in a smart way, only if they does not set an initial position.
-      if not c.size_hints.user_position and not c.size_hints.program_position then
-	awful.placement.no_overlap(c)
-	awful.placement.no_offscreen(c)
-      end
+        -- Put windows in a smart way, only if they does not set an initial position.
+        if not c.size_hints.user_position and not c.size_hints.program_position then
+            awful.placement.no_overlap(c)
+            awful.placement.no_offscreen(c)
+        end
     end
 end)
 
 client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+-- }}}
 
 -- {{{ Timer
 -- update every 3 seconds mpcwidget via timer
@@ -860,10 +860,9 @@ mytimer:add_signal("timeout", function()
 end)
 mytimer:start()
 -- }}}
--- }}}
 
--- {{{ Random Wallpaper
-awful.util.spawn("habak -ms -hi "..os.getenv("HOME").."/Wallpapers")
+-- {{{ Random Wallpaper - The new wallpaper of awesome is cooler
+awful.util.spawn("habak -ms -hi /usr/share/awesome/themes/default/background.png")
 -- }}}
 
 -- {{{ Reload xcompmgr
