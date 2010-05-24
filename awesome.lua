@@ -543,6 +543,7 @@ local mysystray = widget({ type = "systray" })
 -- Create a wibox for each screen and add it
 local mywibox = {}
 local mystatusbox = {}
+local mypromptbox = {}
 local mylayoutbox = {}
 local mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
@@ -582,6 +583,8 @@ mytasklist.buttons = awful.util.table.join(
 
 -- {{{ Add Wibox to screen
 for s = 1, screen.count() do
+    -- Create a promptbox for each screen
+    mypromptbox[s] = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright })
     -- Create an imagebox widget which will contains an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     mylayoutbox[s] = awful.widget.layoutbox(s)
@@ -600,7 +603,6 @@ for s = 1, screen.count() do
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
-
     mystatusbox[s] = awful.wibox({ position = "bottom", screen = s })
 
     -- Add widgets to the wibox - order matters
@@ -608,6 +610,7 @@ for s = 1, screen.count() do
        {
          mylauncher,
          mytaglist[s],
+         mypromptbox[s],
          layout = awful.widget.layout.horizontal.leftright
        },
        mylayoutbox[s],
@@ -714,8 +717,8 @@ local globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
 
-    -- {{{ Custom Bindings
 
+    -- {{{ Custom Bindings
     -- mpd control
     awful.key({ "Shift" }, "space", function () mpc:toggle_play() wimpc:emit_signal("update") end),
     -- Smplayer/Gnome control
@@ -747,9 +750,8 @@ local globalkeys = awful.util.table.join(
     -- }}}
 
     -- }}}
-
-    -- Prompt - Substitute prompt for gmrun
-    awful.key({ modkey },   "r",     function () awful.util.spawn("gmrun") end)
+    -- Prompt
+    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end)
 )
 
 -- Client awful tagging: this is useful to tag some clients and then do stuff like move to tag on them
