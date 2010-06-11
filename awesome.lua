@@ -29,9 +29,6 @@ require("mpd"); mpc = mpd.new()
 -- For sending to sockets
 socket = require("socket")
 
-require("inotify")
-
-print("[awesome] Modules loaded")
 -- }}}
 
 -- {{{ Variable definitions
@@ -85,17 +82,17 @@ end
 
 -- {{{ MPD functions
 function mpc.get_stat(self)
-  -- {{{ trim
+  -- {{{ Trim
   local function trim(text, maxlen)
     if not text then return "NA"
     elseif maxlen and text:len() > maxlen then
       text = text:sub(1, maxlen - 3).."..."
     end
     return awful.util.escape(text)
-   end
+  end
   -- }}}
 
-  -- {{{ timeformat
+  -- {{{ Timeformat
   local function timeformat(t)
     t = tonumber(t)
     if t >= 3600 then -- more than one hour!
@@ -105,27 +102,37 @@ function mpc.get_stat(self)
     end
   end
   -- }}}
+ 
+  -- {{{ Basename
+  local function basename(s)
+    -- Remove all slashes, if any.
+    local basename = s:match(".*/([^/]*)") or s
+    -- Hint: MPD ignores files without a supported file extension.
+    return basename:match("(.*)%.[^.]+")
+  end
+  -- }}}
 
   -- {{{ Naughty notify
    local function naughty_notify(radio_on)
       local t
       if radio_on then
-	t = string.format("%s: %s",
-	markup.bold("Radio"),  trim(self.current.name))
+        t = string.format("%s: %s",
+        markup.bold("Radio"),  trim(self.current.name))
       else
-	t = string.format("%s: %s\n%s:  %s\n%s: %s",
-	markup.bold("Artist"), trim(self.current.artist),
-	markup.bold("Album"),  trim(self.current.album),
-	markup.bold("Title"),  trim(self.current.title))
+        t = string.format("%s: %s\n%s:  %s\n%s: %s",
+        markup.bold("Artist"), trim(self.current.artist),
+        markup.bold("Album"),  trim(self.current.album),
+        markup.bold("Title"),  trim(self.current.title or
+          basename(self.current.file, 25)))
       end
       naughty.notify ({
-	icon    = "/usr/share/pixmaps/sonata.png",
-	icon_size = 45,
-	opacity = 0.9,
-	timeout = 3,
-	text    = t,
-	margin  = 10, })
-   end
+        icon    = "/usr/share/pixmaps/sonata.png",
+        icon_size = 45,
+        opacity = 0.9,
+        timeout = 3,
+        text    = t,
+        margin  = 10, })
+      end
    -- }}}
 
    -- {{{ Main
@@ -152,7 +159,7 @@ function mpc.get_stat(self)
        local artist = trim(self.current.artist, 20)
        local title  = trim(self.current.title or
 			   -- Basename regex is derived from luarocks
-			   self.current.file:match(".*/([^/]*)"), 25)
+         basename(self.current.file), 25)
        local total_time   = timeformat(self.stats.time:match(":(%d+)"))
        local current_time = timeformat(self.stats.time:match("(%d+):"))
 
@@ -245,7 +252,7 @@ local myawesomemenu = {
   { "quit", awesome.quit }
 }
 
--- reboot/shutdown as user without security holes using HAL, make sure you using
+-- reboot/shutdown as user using HAL. Make sure you using
 -- ck-launch-session to start awesome and you are in the power group.
 local request_template  = "dbus-send --system --print-reply \
 		                      --dest=\"org.freedesktop.Hal\" \
@@ -547,38 +554,38 @@ local mypromptbox = {}
 local mylayoutbox = {}
 local mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
-		    awful.button({ }, 1, awful.tag.viewonly),
-		    awful.button({ modkey }, 1, awful.client.movetotag),
-		    awful.button({ }, 3, awful.tag.viewtoggle),
-		    awful.button({ modkey }, 3, awful.client.toggletag),
-		    awful.button({ }, 4, awful.tag.viewnext),
-		    awful.button({ }, 5, awful.tag.viewprev)
-		    )
+                    awful.button({ }, 1, awful.tag.viewonly),
+                    awful.button({ modkey }, 1, awful.client.movetotag),
+                    awful.button({ }, 3, awful.tag.viewtoggle),
+                    awful.button({ modkey }, 3, awful.client.toggletag),
+                    awful.button({ }, 4, awful.tag.viewnext),
+                    awful.button({ }, 5, awful.tag.viewprev)
+                    )
 local mytasklist = {}
 mytasklist.buttons = awful.util.table.join(
-		     awful.button({ }, 1, function (c)
-					      if not c:isvisible() then
-						  awful.tag.viewonly(c:tags()[1])
-					      end
-					      client.focus = c
-					      c:raise()
-					  end),
-		     awful.button({ }, 3, function ()
-					      if instance then
-						  instance:hide()
-						  instance = nil
-					      else
-						  instance = awful.menu.clients({ width=250 })
-					      end
-					  end),
-		     awful.button({ }, 4, function ()
-					      awful.client.focus.byidx(1)
-					      if client.focus then client.focus:raise() end
-					  end),
-		     awful.button({ }, 5, function ()
-					      awful.client.focus.byidx(-1)
-					      if client.focus then client.focus:raise() end
-					  end))
+                     awful.button({ }, 1, function (c)
+                                              if not c:isvisible() then
+                                                  awful.tag.viewonly(c:tags()[1])
+                                              end
+                                              client.focus = c
+                                              c:raise()
+                                          end),
+                     awful.button({ }, 3, function ()
+                                              if instance then
+                                                  instance:hide()
+                                                  instance = nil
+                                              else
+                                                  instance = awful.menu.clients({ width=250 })
+                                              end
+                                          end),
+                     awful.button({ }, 4, function ()
+                                              awful.client.focus.byidx(1)
+                                              if client.focus then client.focus:raise() end
+                                          end),
+                     awful.button({ }, 5, function ()
+                                              awful.client.focus.byidx(-1)
+                                              if client.focus then client.focus:raise() end
+                                          end))
 -- }}}
 
 -- {{{ Add Wibox to screen
@@ -589,17 +596,17 @@ for s = 1, screen.count() do
     -- We need one layoutbox per screen.
     mylayoutbox[s] = awful.widget.layoutbox(s)
     mylayoutbox[s]:buttons(awful.util.table.join(
-			   awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
-			   awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
-			   awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
-			   awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
+                           awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+                           awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
+                           awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
+                           awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
     -- Create a taglist widget
     mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.label.all, mytaglist.buttons)
 
     -- Create a tasklist widget
     mytasklist[s] = awful.widget.tasklist(function(c)
-      return awful.widget.tasklist.label.currenttags(c, s)
-    end, mytasklist.buttons)
+                                              return awful.widget.tasklist.label.currenttags(c, s)
+                                          end, mytasklist.buttons)
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
@@ -607,23 +614,22 @@ for s = 1, screen.count() do
 
     -- Add widgets to the wibox - order matters
     mywibox[s].widgets = {
-       {
-         mylauncher,
-         mytaglist[s],
-         mypromptbox[s],
-         layout = awful.widget.layout.horizontal.leftright
-       },
-       mylayoutbox[s],
-       uptimewidget, mytextclock, clockicon,
-       volumewidget, volumebar.widget, volumeicon,
-       s == 1 and mysystray or nil,
-       mytasklist[s],
-       layout = awful.widget.layout.horizontal.rightleft
+        {
+            mylauncher,
+            mytaglist[s],
+            mypromptbox[s],
+            layout = awful.widget.layout.horizontal.leftright
+        },
+        mylayoutbox[s],
+        uptimewidget, mytextclock, clockicon,
+        volumewidget, volumebar.widget, volumeicon,
+        s == 1 and mysystray or nil,
+        mytasklist[s],
+        layout = awful.widget.layout.horizontal.rightleft
     }
 
     mystatusbox[s].widgets = {
       {
-        testwidget,
         cpuicon, cpuwidget,
         memicon, memwidget,
         iotextwidget, iowidget1, iowidget2,
@@ -667,7 +673,6 @@ local globalkeys = awful.util.table.join(
             if client.focus then client.focus:raise() end
         end),
     -- awful.key({ modkey,           }, "w",       function() mymainmenu:show({keygrabber=true})        end),
-    awful.key({ modkey            }, "Escape",  function() awful.tag.history.restore() end),    -- move to prev tag by history
     awful.key({ modkey, "Shift"   }, "n",       shifty.send_prev),                              -- move client to prev tag
     awful.key({ modkey            }, "n",       shifty.send_next),                              -- move client to next tag
     -- awful.key({ modkey            }, "w",       shifty.del),                                    -- delete a tag
@@ -750,8 +755,18 @@ local globalkeys = awful.util.table.join(
     -- }}}
 
     -- }}}
+
     -- Prompt
-    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end)
+    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
+    --awful.key({ modkey, "Shift"},    "r",     function () awful.util.spawn("gmrun")       end),
+
+    awful.key({ modkey }, "x",
+              function ()
+                  awful.prompt.run({ prompt = "Run Lua code: " },
+                  mypromptbox[mouse.screen].widget,
+                  awful.util.eval, nil,
+                  awful.util.getdir("cache") .. "/history_eval")
+              end)
 )
 
 -- Client awful tagging: this is useful to tag some clients and then do stuff like move to tag on them
@@ -847,6 +862,7 @@ client.add_signal("manage", function (c, startup)
             awful.placement.no_overlap(c)
             awful.placement.no_offscreen(c)
         end
+        
     end
 end)
 
