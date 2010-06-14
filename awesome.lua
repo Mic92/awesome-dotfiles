@@ -496,7 +496,7 @@ local lib = os.getenv("HOME").."/music/podcasts/"
 vicious.register(newswidget, vicious.widgets.sumup,
 function(widget, args)
   local text = ""
-  local name = { "Tageschau", "mobileMacs", "HoRads" }
+  local name = { "Tageschau", "mobileMacs", "HoRads", "Spaßpaket" }
   for i, name in ipairs(name) do
     if args[i] > 0 then
       text = text..string.format("%s: %d ", name, args[i])
@@ -507,9 +507,9 @@ function(widget, args)
   return text
 end, 180, { pattern = ".*.(mp[34]|ogg|m4a)$",
 		  paths   = { lib.."Tagesschau \(512x288\)",
-		      lib.."mobileMacs",
-				  lib.."RadioTux GNU_Linux » HoRadS" }
-	      }
+			      lib.."mobileMacs",
+			      lib.."RadioTux GNU_Linux » HoRadS",
+			      lib.."WDR 2 Zugabe Spaßpaket", }}
 )
 
 -- Register Buttons in all widget
