@@ -107,6 +107,7 @@ function mpc.get_stat(self)
   local function basename(s)
     -- Remove all slashes, if any.
     local basename = s:match(".*/([^/]*)") or s
+    -- Remove file extension too.
     -- Hint: MPD ignores files without a supported file extension.
     return basename:match("(.*)%.[^.]+")
   end
@@ -189,7 +190,8 @@ end
 -- the follow function make it easier to swap tags
 
 shifty.config.tags = {
-  ["1:web"]     = { position = 1, exclusive = true, init = true, nopopup = true, run = function () run_once(browser) end },
+  ["1:web"]     = { position = 1, exclusive = true, init = true, nopopup = true,
+		    layout = "max", run = function () run_once(browser) end },
   ["2:dev"]     = { position = 2, exclusive = true, spawn = terminal },
   ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "pidgin" },
   ["4:doc"]     = { position = 4, exclusive = true },
@@ -206,22 +208,20 @@ shifty.config.tags = {
 -- order here matters, early rules will be applied first
 shifty.config.apps = {
   { match = { "Firefox", "Opera", "chromium",
-  "Developer Tools" },      tag = "1:web" },
+      "Developer Tools" },                                  tag = "1:web" },
   { match = { "xterm", "urxvt" },                           tag = "2:dev", slave = true, honorsizehints = false },
   { match = { "Pidgin" },                                   tag = "3:im" },
   { match = { "evince", "gvim", "keepassx", "OpenOffice" }, tag = "4:doc" },
-  { match = { "gmrun" },                                    geometry = { 0,18,nil,nil } },
   { match = { "gpodder", "JDownloader", "Nachricht" },      tag = "d:own" },
   { match = { "*mplayer*", "MPlayer" },                     tag = "s:mplayer" },
   { match = { "pcmanfm", "nautilus" },                      tag = "p:cfm", slave = true },
-  { match = { "ncmpcpp", "Goggles Music Manager", "sonata" }, tag = "a:rio" },
+  { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
   { match = { "emacs@" },                                   tag = "e:macs" },
   { match = { "Wine" },                                     tag = "w:ine" },
-  { match = { "gimp" },                                     tag = "g:imp", float=true },
+  { match = { "gimp" },                                     tag = "g:imp" },
   { match = { "gmrun", "gcalctool", "Komprimieren","Wicd*" },
   intrusive = true, ontop = true, above = true, dockable = true },
-  { match = { "gcalctool" }, float = true },
-  -- buttons to resize/move clientst
+  -- buttons to resize/move clients
   { match = { "" }, buttons = awful.util.table.join(
   awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
   awful.button({ modkey }, 1, awful.mouse.client.move ),
@@ -243,10 +243,10 @@ shifty.modkey = modkey
 shifty.config.sloppy = true
 -- }}}
 
--- {{{ Menu 
--- Create a laucher widget and a main menu 
-local myawesomemenu = { 
-  { "manual", terminal .. " -e man awesome" }, 
+-- {{{ Menu
+-- Create a laucher widget and a main menu
+local myawesomemenu = {
+  { "manual", terminal .. " -e man awesome" },
   { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/awesome.lua" },
   { "restart", awesome.restart },
   { "quit", awesome.quit }
@@ -334,8 +334,8 @@ function (widget, args)
   else return args[1].."%" end
 end, 5, chan)
 -- Add signal
-volumewidget:add_signal("update", function () 
-  vicious.force({ volumewidget, volumebar }) 
+volumewidget:add_signal("update", function ()
+  vicious.force({ volumewidget, volumebar })
 end)
 
 -- Register buttons and Signals
@@ -496,20 +496,22 @@ local lib = os.getenv("HOME").."/music/podcasts/"
 vicious.register(newswidget, vicious.widgets.sumup,
 function(widget, args)
   local text = ""
-  local name = { "Tageschau", "mobileMacs", "HoRads", "Spaßpaket" }
-  for i, name in ipairs(name) do
-    if args[i] > 0 then
-      text = text..string.format("%s: %d ", name, args[i])
+  for key, value in pairs(args) do
+    if value > 0 then
+      text = text..string.format("%s: %d ", key, value)
     end
   end
   -- toggle icon
   newsicon.visible = (text ~= "")
   return text
-end, 180, { pattern = ".*.(mp[34]|ogg|m4a)$",
-		  paths   = { lib.."Tagesschau \(512x288\)",
-			      lib.."mobileMacs",
-			      lib.."RadioTux GNU_Linux » HoRadS",
-			      lib.."WDR 2 Zugabe Spaßpaket", }}
+end, 180,
+{ pattern = ".*.(mp[34]|ogg|m4a)$",
+  paths = { Tagess = lib.."Tagesschau \(512x288\)",
+			      mobileMacs = lib.."mobileMacs",
+			      HoRads = lib.."RadioTux GNU_Linux » HoRadS",
+			      Spasspkt = lib.."WDR 2 Zugabe Spaßpaket",
+            NFSW = lib.."The Lunatic Fringe",
+	    }}
 )
 
 -- Register Buttons in all widget
@@ -586,9 +588,7 @@ mytasklist.buttons = awful.util.table.join(
                                               awful.client.focus.byidx(-1)
                                               if client.focus then client.focus:raise() end
                                           end))
--- }}}
 
--- {{{ Add Wibox to screen
 for s = 1, screen.count() do
     -- Create a promptbox for each screen
     mypromptbox[s] = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright })
@@ -643,8 +643,6 @@ for s = 1, screen.count() do
       layout = awful.widget.layout.horizontal.rightleft
     }
 
-    mywibox[s].screen = s
-    mystatusbox[s].screen = s
 end
 -- }}}
 
@@ -757,19 +755,25 @@ local globalkeys = awful.util.table.join(
     -- }}}
 
     -- Prompt
-    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
-    --awful.key({ modkey, "Shift"},    "r",     function () awful.util.spawn("gmrun")       end),
+    --awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
+    awful.key({ modkey },            "r",     function ()
+      awful.util.spawn("dmenu_run -i ".. 
+      " -nb '"  .. "#222222"  .. 
+      "' -nf '" .. "#888888" .. 
+      "' -sb '" .. "#285577" .. 
+      "' -fn '"  .. "sans-14" ..
+      "' -sf '" .. "#ffffff" .. "'") 
+    end),
 
     awful.key({ modkey }, "x",
               function ()
-                  awful.prompt.run({ prompt = "Run Lua code: " },
-                  mypromptbox[mouse.screen].widget,
-                  awful.util.eval, nil,
-                  awful.util.getdir("cache") .. "/history_eval")
+                awful.prompt.run({ prompt = "Run Lua code: " },
+                mypromptbox[mouse.screen].widget,
+                awful.util.eval, nil,
+                awful.util.getdir("cache") .. "/history_eval")
               end)
 )
 
--- Client awful tagging: this is useful to tag some clients and then do stuff like move to tag on them
 local clientkeys = awful.util.table.join(
     awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end),
     awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end),
@@ -843,26 +847,26 @@ client.add_signal("manage", function (c, startup)
 
     -- Enable sloppy focus
     c:add_signal("mouse::enter", function(c)
-        if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-            and awful.client.focus.filter(c) then
-            client.focus = c
-        end
+      if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
+        and awful.client.focus.filter(c) then
+        client.focus = c
+      end
     end)
 
 		-- usefull for debugging
 	  -- naughty.notify( { title = 'Fenster', text = c.name, timeout = 5 } )
 
     if not startup then
-        -- Set the windows at the slave,
-        -- i.e. put it at the end of others instead of setting it master.
-        -- awful.client.setslave(c)
+      -- Set the windows at the slave,
+      -- i.e. put it at the end of others instead of setting it master.
+      awful.client.setslave(c)
 
-        -- Put windows in a smart way, only if they does not set an initial position.
-        if not c.size_hints.user_position and not c.size_hints.program_position then
-            awful.placement.no_overlap(c)
-            awful.placement.no_offscreen(c)
-        end
-        
+      -- Put windows in a smart way, only if they does not set an initial position.
+      if not c.size_hints.user_position and not c.size_hints.program_position then
+        awful.placement.no_overlap(c)
+        awful.placement.no_offscreen(c)
+      end
+      
     end
 end)
 
