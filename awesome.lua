@@ -292,12 +292,11 @@ local clockicon_tooltip = awful.tooltip({
 
 -- {{{ Uptime
 local uptimewidget = widget({ type = "textbox" })
---vicious.register(uptimewidget, vicious.widgets.uptime, "/ $1d $2h $3min <b>Load</b> $4 ", 61)
 vicious.register(uptimewidget, vicious.widgets.uptime,
 function (widget, args)
    local t = string.format("/ %sd %sh %smin", args[1], args[2], args[3])
    if tonumber(args[4]) > 0.10 then
-     t = t.." <b>Load</b> "..args[4]
+     t = t..string.format(" <b>Load</b> %s ", args[4])
    end
    return t
 end, 61)
@@ -517,7 +516,11 @@ end, 180,
 -- Register Buttons in all widget
 newswidget:buttons( awful.util.table.join(
    awful.button({ }, 1, function ()                                  -- left click -> play news
-     awful.util.spawn('smplayer "/home/joerg/music/podcasts/Tagesschau \(512x288\)/"')
+     vicious.force({ newswidget })
+     if newswidget.text then 
+       local cmd = string.format('smplayer "%s/Tagesschau \(512x288\)"', lib)
+       awful.util.spawn(cmd)
+     end
    end),
    awful.button({ }, 3, function () awful.util.spawn("gpodder") end) -- right click
 ))
@@ -897,7 +900,7 @@ print("[awesome] Send welcome message")
 
 naughty.notify( { title = "Awesome "..awesome.version.." started!",
 		  text  = string.format("Welcome %s. Your host is %s.\nIt is %s",
-	      os.getenv("USER"), awful.util.pread("hostname"):gsub("\n$", ""), os.date()),
+	      os.getenv("USER"), awful.util.pread("hostname"):match("(.*)\n$"), os.date()),
       timeout = 7 } )
 -- }}}
 -- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=2:tabstop=2:softtabstop=2:encoding=utf-8:textwidth=80
