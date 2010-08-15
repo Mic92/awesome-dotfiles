@@ -1,6 +1,6 @@
 --------------------------------------------
 -- awesome.lua - main config of my window manager
--- version: v3.4.5 (Close To You)
+-- version: v3.4.6 (Hooch)
 -- D-Bus support: x
 -- os: archlinux i686
 -- cpu: Intel Pentium Dual CPU E2180 2.00GHz
