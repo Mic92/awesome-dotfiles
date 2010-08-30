@@ -43,15 +43,15 @@ function urgent(t)
 end
  
 function bold(text)
-    return '<b>'..text..'</b>'
+    return '<b>'..text or ""..'</b>'
 end
 
 function underline(text)
-    return '<u>'..text..'</u>'
+    return '<u>'..text or ""..'</u>'
 end
 
 function italic(text)
-    return '<i>'..text..'<i>'
+    return '<i>'..text or ""..'<i>'
 end
  
 function heading(text)
