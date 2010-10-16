@@ -81,6 +81,7 @@ end
 -- }}}
 
 -- {{{ MPD functions
+-- The following function runs without any extern dependencies
 function mpc.get_stat(self)
   -- {{{ Trim
   local function trim(text, maxlen)
@@ -102,7 +103,7 @@ function mpc.get_stat(self)
     end
   end
   -- }}}
- 
+
   -- {{{ Basename
   local function basename(s)
     -- Remove all slashes, if any.
@@ -114,71 +115,72 @@ function mpc.get_stat(self)
   -- }}}
 
   -- {{{ Naughty notify
-   local function naughty_notify(radio_on)
+   local function naughty_notify(current)
       local t
-      if radio_on then
-        t = string.format("%s: %s",
-        markup.bold("Radio"),  trim(self.current.name))
+      if current.isradio then
+	t = "<b>Radio:</b> "..trim(current.name, 25)
       else
-        t = string.format("%s: %s\n%s:  %s\n%s: %s",
-        markup.bold("Artist"), trim(self.current.artist),
-        markup.bold("Album"),  trim(self.current.album),
-        markup.bold("Title"),  trim(self.current.title or
-          basename(self.current.file, 25)))
+	t = string.format("%s %s\n%s %s\n%s %s",
+	"<b>Artist:</b>", trim(current.artist),
+	"<b>Album:</b>",  trim(current.album),
+	"<b>Title:</b>",  trim(current.title or
+	  basename(current.file, 25)))
       end
       naughty.notify ({
-        icon    = "/usr/share/pixmaps/sonata.png",
-        icon_size = 45,
-        opacity = 0.9,
-        timeout = 3,
-        text    = t,
-        margin  = 10, })
+	icon    = "/usr/share/pixmaps/sonata.png",
+	icon_size = 45,
+	opacity = 0.9,
+	timeout = 3,
+	text    = t,
+	margin  = 10, })
       end
    -- }}}
 
    -- {{{ Main
-   self.stats = self:send("status")
+   local status = self:send("status")
 
-   if self.stats.errormsg then return "No Connection."
-   elseif self.stats.state == "stop" then return
+   if status.errormsg then return "No Connection."
+   elseif status.state == "stop" then return
    else
      -- Fetch infos about current songs
-     self.current = self:send("currentsong")
+     local current = self:send("currentsong")
+     local now_playing
 
-     -- Basic information set
-     local radio_on = (self.current.name ~= nil), now_playing
+     current.isradio = (current.name ~= nil)
 
      -- Additional information depending on mode
-     if radio_on then
-       local station = trim(self.current.name, 20)
+     if current.isradio then
+       local station = trim(current.name, 20)
        -- Radio stations often put the name of artist and song
        -- in the title, so it gets longer as usual.
-       local title   = trim(self.current.title, 35)
+       local title   = trim(current.title, 35)
 
        now_playing = string.format("%s: %s ", station, title)
      else
-       local artist = trim(self.current.artist, 20)
-       local title  = trim(self.current.title or
+       local artist = trim(current.artist, 20)
+       local title  = trim(current.title or
 			   -- Basename regex is derived from luarocks
-         basename(self.current.file), 25)
-       local total_time   = timeformat(self.stats.time:match(":(%d+)"))
-       local current_time = timeformat(self.stats.time:match("(%d+):"))
+	 basename(current.file), 25)
+       local total_time   = timeformat(status.time:match(":(%d+)"))
+       local current_time = timeformat(status.time:match("(%d+):"))
 
        now_playing = string.format("%s: %s | %s/%s ", artist, title, current_time, total_time)
      end
 
      -- Title has changed?
-     if (self.last_songid ~= self.stats.songid) and self.last_songid then
-       naughty_notify(radio_on)
+     if self.last_songid ~= status.songid and self.last_songid then
+       naughty_notify(current)
      end
-     self.last_songid = self.stats.songid
 
-     if self.stats.state == "pause" then
+     self.last_songid = status.songid
+
+     if status.state == "pause" then
        -- Use inconspicuous color to push it to the background, depend on the theme.
-       now_playing = "<span color='#505050'>"..now_playing.."</span>"
+       return "<span color='#505050'>"..now_playing.."</span>"
+     else
+       return now_playing
      end
 
-     return now_playing
    end
    -- }}}
 end
