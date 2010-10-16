@@ -250,6 +250,7 @@ shifty.config.sloppy = true
 local myawesomemenu = {
   { "manual", terminal .. " -e man awesome" },
   { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/awesome.lua" },
+  { "powersafe off", "xset s off" },
   { "restart", awesome.restart },
   { "quit", awesome.quit }
 }
