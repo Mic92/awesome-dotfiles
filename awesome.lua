@@ -625,33 +625,34 @@ for s = 1, screen.count() do
 
     -- Add widgets to the wibox - order matters
     mywibox[s].widgets = {
-        {
-            mylauncher,
-            mytaglist[s],
-            mypromptbox[s],
-            layout = awful.widget.layout.horizontal.leftright
-        },
+      mylauncher,
+      mytaglist[s],
+      mypromptbox[s],
+      {
         mylayoutbox[s],
         uptimewidget, mytextclock, clockicon,
-        volumewidget, volumebar.widget, volumeicon,
+        volumebar.widget, volumewidget, volumeicon,
         s == 1 and mysystray or nil,
-        mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
+      },
+      mytasklist[s],
+      layout = awful.widget.layout.horizontal.leftright,
+      height = mywibox[s].height
     }
 
     mystatusbox[s].widgets = {
+      cpuicon, cpuwidget,
+      memicon, memwidget,
+      iotextwidget, iowidget1, iowidget2,
+      downicon, netwidget, upicon,
       {
-        cpuicon, cpuwidget,
-        memicon, memwidget,
-        iotextwidget, iowidget1, iowidget2,
-        downicon, netwidget, upicon,
-        layout = awful.widget.layout.horizontal.leftright
+        pkgwidget, pkgicon,
+        wimpc, mpcicon,
+        newswidget, newsicon,
+        layout = awful.widget.layout.horizontal.rightleft,
       },
-      pkgwidget, pkgicon,
-      wimpc, mpcicon,
-      newswidget, newsicon,
-      s == 1 or nil,
-      layout = awful.widget.layout.horizontal.rightleft
+      layout = awful.widget.layout.horizontal.leftright,
+      height = mystatusbox[s].height
     }
 
 end
