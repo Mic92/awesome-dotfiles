@@ -271,8 +271,7 @@ local mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.
 				  }
 				 })
 
-local mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
-				     menu = mymainmenu })
+local mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon, menu = mymainmenu })
 -- }}}
 
 -- {{{ Vicious and MPD
@@ -319,7 +318,7 @@ volumebar:set_background_color(beautiful.fg_off_widget)
 volumebar:set_color(beautiful.fg_widget)
 -- Bar from green to red
 volumebar:set_gradient_colors({ '#AECF96', '#88A175', '#FF5656' })
-awful.widget.layout.margins[volumebar.widget] = { top = 2, bottom = 2 }
+awful.widget.layout.margins[volumebar.widget] = { top = 2, bottom = 2, left = 2 }
 -- Enable caching
 vicious.cache(vicious.widgets.volume)
 
