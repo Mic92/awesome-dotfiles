@@ -499,7 +499,11 @@ function(widget, args)
   local text = ""
   for key, value in pairs(args) do
     if value > 0 then
-      text = text..string.format("%s: %d ", key, value)
+      if value == 1 then
+        text = text..key.." "
+      else
+        text = text..string.format("%s: %d ", key, value)
+      end
     end
   end
   -- toggle icon
@@ -508,10 +512,11 @@ function(widget, args)
 end, 180,
 { pattern = ".*.(mp[34]|ogg|m4a)$",
   paths = { Tagess = lib.."Tagesschau \(512x288\)",
-			      mobileMacs = lib.."mobileMacs",
-			      HoRads = lib.."RadioTux GNU_Linux » HoRadS",
-			      Spasspkt = lib.."WDR 2 Zugabe Spaßpaket",
+            mobileMacs = lib.."mobileMacs",
+            HoRads = lib.."RadioTux GNU_Linux » HoRadS",
+            Spasspkt = lib.."WDR 2 Zugabe Spaßpaket",
             NFSW = lib.."The Lunatic Fringe",
+            Alternativlos = lib.."Alternativlos"
 	    }}
 )
 
