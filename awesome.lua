@@ -14,6 +14,8 @@ require("awful")
 require("awful.autofocus")
 --require("awful.rules")
 -- Theme handling library
+--local image = require("oocairo").image_surface_create_from_png
+--local gears = require("gears.object")
 require("beautiful")
 -- Notification library
 require("naughty")
@@ -127,12 +129,12 @@ function mpc.get_stat(self)
 	  basename(current.file, 25)))
       end
       naughty.notify ({
-	icon    = "/usr/share/pixmaps/sonata.png",
-	icon_size = 45,
-	opacity = 0.9,
-	timeout = 3,
-	text    = t,
-	margin  = 10, })
+        icon    = "/usr/share/pixmaps/sonata.png",
+        icon_size = 45,
+        opacity = 0.9,
+        timeout = 3,
+        text    = t,
+        margin  = 10, })
       end
    -- }}}
 
@@ -258,9 +260,9 @@ local myawesomemenu = {
 -- reboot/shutdown as user using HAL. Make sure you using
 -- ck-launch-session to start awesome and you are in the power group.
 local request_template  = "dbus-send --system --print-reply \
-		                      --dest=\"org.freedesktop.Hal\" \
-                          /org/freedesktop/Hal/devices/computer\
-                          org.freedesktop.Hal.Device.SystemPowerManagement."
+				      --dest=\"org.freedesktop.Hal\" \
+			  /org/freedesktop/Hal/devices/computer\
+			  org.freedesktop.Hal.Device.SystemPowerManagement."
 
 local mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
 				    { "open terminal", terminal },
@@ -281,7 +283,8 @@ print("[awesome] initialize vicious")
 -- {{{ Date and time
 -- Create a textclock widget
 local mytextclock = awful.widget.textclock({ align = "right" })
-local clockicon = widget({ type = "imagebox" }); clockicon.image = image(icon_path.."time.png")
+local clockicon = widget({ type = "imagebox" })
+clockicon.image = image(icon_path.."time.png")
 -- Register calendar tooltip
 local clockicon_tooltip = awful.tooltip({
   objects = { clockicon },
@@ -335,6 +338,8 @@ function (widget, args)
   else return args[1].."%" end
 end, 5, chan)
 -- Add signal
+--volume = gears()
+--gears.add_signal(volume, "update")
 volumewidget:add_signal("update", function ()
   vicious.force({ volumewidget, volumebar })
 end)
@@ -524,9 +529,9 @@ end, 180,
 newswidget:buttons( awful.util.table.join(
    awful.button({ }, 1, function ()                                  -- left click -> play news
      vicious.force({ newswidget })
-     if newswidget.text then 
-       local cmd = string.format('smplayer "%s/Tagesschau \(512x288\)"', lib)
-       awful.util.spawn(cmd)
+     if newswidget.text then
+       local play_news = string.format('smplayer "%s/Tagesschau \(512x288\)"', lib)
+       awful.util.spawn(play_news)
      end
    end),
    awful.button({ }, 3, function () awful.util.spawn("gpodder") end) -- right click
@@ -567,38 +572,38 @@ local mypromptbox = {}
 local mylayoutbox = {}
 local mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
-                    awful.button({ }, 1, awful.tag.viewonly),
-                    awful.button({ modkey }, 1, awful.client.movetotag),
-                    awful.button({ }, 3, awful.tag.viewtoggle),
-                    awful.button({ modkey }, 3, awful.client.toggletag),
-                    awful.button({ }, 4, awful.tag.viewnext),
-                    awful.button({ }, 5, awful.tag.viewprev)
-                    )
+		    awful.button({ }, 1, awful.tag.viewonly),
+		    awful.button({ modkey }, 1, awful.client.movetotag),
+		    awful.button({ }, 3, awful.tag.viewtoggle),
+		    awful.button({ modkey }, 3, awful.client.toggletag),
+		    awful.button({ }, 4, awful.tag.viewnext),
+		    awful.button({ }, 5, awful.tag.viewprev)
+		    )
 local mytasklist = {}
 mytasklist.buttons = awful.util.table.join(
-                     awful.button({ }, 1, function (c)
-                                              if not c:isvisible() then
-                                                  awful.tag.viewonly(c:tags()[1])
-                                              end
-                                              client.focus = c
-                                              c:raise()
-                                          end),
-                     awful.button({ }, 3, function ()
-                                              if instance then
-                                                  instance:hide()
-                                                  instance = nil
-                                              else
-                                                  instance = awful.menu.clients({ width=250 })
-                                              end
-                                          end),
-                     awful.button({ }, 4, function ()
-                                              awful.client.focus.byidx(1)
-                                              if client.focus then client.focus:raise() end
-                                          end),
-                     awful.button({ }, 5, function ()
-                                              awful.client.focus.byidx(-1)
-                                              if client.focus then client.focus:raise() end
-                                          end))
+		     awful.button({ }, 1, function (c)
+					      if not c:isvisible() then
+						  awful.tag.viewonly(c:tags()[1])
+					      end
+					      client.focus = c
+					      c:raise()
+					  end),
+		     awful.button({ }, 3, function ()
+					      if instance then
+						  instance:hide()
+						  instance = nil
+					      else
+						  instance = awful.menu.clients({ width=250 })
+					      end
+					  end),
+		     awful.button({ }, 4, function ()
+					      awful.client.focus.byidx(1)
+					      if client.focus then client.focus:raise() end
+					  end),
+		     awful.button({ }, 5, function ()
+					      awful.client.focus.byidx(-1)
+					      if client.focus then client.focus:raise() end
+					  end))
 
 for s = 1, screen.count() do
     -- Create a promptbox for each screen
@@ -607,10 +612,10 @@ for s = 1, screen.count() do
     -- We need one layoutbox per screen.
     mylayoutbox[s] = awful.widget.layoutbox(s)
     mylayoutbox[s]:buttons(awful.util.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
-                           awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
+			   awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+			   awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
+			   awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
+			   awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
     -- Create a taglist widget
     mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.label.all, mytaglist.buttons)
 
@@ -673,15 +678,15 @@ local globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
 
     awful.key({ modkey,           }, "j",
-        function ()
-            awful.client.focus.byidx( 1)
-            if client.focus then client.focus:raise() end
-        end),
+	function ()
+	    awful.client.focus.byidx( 1)
+	    if client.focus then client.focus:raise() end
+	end),
     awful.key({ modkey,           }, "k",
-        function ()
-            awful.client.focus.byidx(-1)
-            if client.focus then client.focus:raise() end
-        end),
+	function ()
+	    awful.client.focus.byidx(-1)
+	    if client.focus then client.focus:raise() end
+	end),
     -- awful.key({ modkey,           }, "w",       function() mymainmenu:show({keygrabber=true})        end),
     awful.key({ modkey, "Shift"   }, "n",       shifty.send_prev),                              -- move client to prev tag
     awful.key({ modkey            }, "n",       shifty.send_next),                              -- move client to next tag
@@ -696,12 +701,12 @@ local globalkeys = awful.util.table.join(
     awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end),
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
     awful.key({ modkey,           }, "Tab",
-        function ()
-            awful.client.focus.history.previous()
-            if client.focus then
-                client.focus:raise()
-            end
-        end),
+	function ()
+	    awful.client.focus.history.previous()
+	    if client.focus then
+		client.focus:raise()
+	    end
+	end),
 
     -- move float clients without a mouse
     awful.key({ modkey, modkey2 }, "h", function () awful.client.moveresize(-20, 0, 0, 0) end),
@@ -711,9 +716,9 @@ local globalkeys = awful.util.table.join(
 
     awful.key({ modkey, }, "b", function ()
        if mystatusbox[mouse.screen].screen == nil then
-         mystatusbox[mouse.screen].screen = mouse.screen
+	 mystatusbox[mouse.screen].screen = mouse.screen
        else
-         mystatusbox[mouse.screen].screen = nil
+	 mystatusbox[mouse.screen].screen = nil
        end
      end),
 
@@ -735,12 +740,12 @@ local globalkeys = awful.util.table.join(
 
     -- {{{ Custom Bindings
     -- mpd control
-    awful.key({ "Shift" }, "space", function () mpc:toggle_play() wimpc:emit_signal("update") end),
+    awful.key({ "Shift" }, "space", function () mpc:toggle_play() wimpc_timer:emit_signal("timeout") end),
     -- Smplayer/Gnome control
     awful.key({ modkey2 }, "space", function ()
       local result = os.execute("smplayer -send-action play_or_pause") -- return 0 on succes
       if result ~= 0 then
-        awful.util.spawn("dbus-send / com.gnome.mplayer.Play") -- if state is play it pause
+	awful.util.spawn("dbus-send / com.gnome.mplayer.Play") -- if state is play it pause
       end
     end),
 
@@ -789,10 +794,10 @@ local clientkeys = awful.util.table.join(
     awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end),
     awful.key({ modkey,           }, "n",      function (c) c.minimized = not c.minimized    end),
     awful.key({ modkey,           }, "m",
-        function (c)
-            c.maximized_horizontal = not c.maximized_horizontal
-            c.maximized_vertical   = not c.maximized_vertical
-        end)
+	function (c)
+	    c.maximized_horizontal = not c.maximized_horizontal
+	    c.maximized_vertical   = not c.maximized_vertical
+	end)
 )
 
 -- Compute the maximum number of digit we need, limited to 10
@@ -853,8 +858,8 @@ client.add_signal("manage", function (c, startup)
     -- Enable sloppy focus
     c:add_signal("mouse::enter", function(c)
       if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-        and awful.client.focus.filter(c) then
-        client.focus = c
+	and awful.client.focus.filter(c) then
+	client.focus = c
       end
     end)
 
@@ -868,24 +873,17 @@ client.add_signal("manage", function (c, startup)
 
       -- Put windows in a smart way, only if they does not set an initial position.
       if not c.size_hints.user_position and not c.size_hints.program_position then
-        awful.placement.no_overlap(c)
-        awful.placement.no_offscreen(c)
+	awful.placement.no_overlap(c)
+	awful.placement.no_offscreen(c)
       end
-      
+
     end
 end)
 
 client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
--- }}}
 
 -- {{{ Timer
--- update every 3 seconds mpcwidget via timer
-mytimer = timer { timeout = 3 }
-mytimer:add_signal("timeout", function()
-  wimpc:emit_signal("update")
-end)
-mytimer:start()
 -- }}}
 
 -- {{{ Random Wallpaper - The new wallpaper of awesome is cooler
@@ -905,4 +903,4 @@ naughty.notify( { title = "Awesome "..awesome.version.." started!",
 	      os.getenv("USER"), awful.util.pread("hostname"):match("(.*)\n$"), os.date()),
       timeout = 7 } )
 -- }}}
--- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=2:tabstop=2:softtabstop=2:encoding=utf-8:textwidth=80
+-- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=2:tabstop=2:softtabstop=2:textwidth=80
