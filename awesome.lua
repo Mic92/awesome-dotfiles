@@ -767,24 +767,17 @@ local globalkeys = awful.util.table.join(
     -- }}}
 
     -- Prompt
-    --awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
-    awful.key({ modkey },            "r",     function ()
-      awful.util.spawn("dmenu_run -i ".. 
-      " -nb '"  .. "#222222"  .. 
-      "' -nf '" .. "#888888" .. 
-      "' -sb '" .. "#285577" .. 
-      "' -fn '"  .. "sans-14" ..
-      "' -sf '" .. "#ffffff" .. "'") 
-    end),
+    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
 
     awful.key({ modkey }, "x",
-              function ()
-                awful.prompt.run({ prompt = "Run Lua code: " },
-                mypromptbox[mouse.screen].widget,
-                awful.util.eval, nil,
-                awful.util.getdir("cache") .. "/history_eval")
-              end)
-)
+	      function ()
+		awful.prompt.run({ prompt = "Run Lua code: " },
+		mypromptbox[mouse.screen].widget,
+		awful.util.eval, nil,
+		awful.util.getdir("cache") .. "/history_eval")
+	      end)
+	      )
+
 
 local clientkeys = awful.util.table.join(
     awful.key({ modkey,           }, "f",      function (c) c.fullscreen = not c.fullscreen  end),
