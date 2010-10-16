@@ -536,21 +536,22 @@ newswidget:buttons( awful.util.table.join(
 -- {{{ MPD
 local wimpc = widget({ type = "textbox" })
 local mpcicon = widget({ type = "imagebox" }) mpcicon.image = image(icon_path.."music.png")
---mpcicon.visible = false
 
 -- Register Buttons in both widget
 mpcicon:buttons( wimpc:buttons(awful.util.table.join(
-   awful.button({ }, 1, function () mpc:toggle_play() wimpc:emit_signal("update") end), -- left click
-   awful.button({ }, 2, function () awful.util.spawn("sonata")                    end), -- middle click
-   awful.button({ }, 3, function () awful.util.spawn("urxvt -e ncmpcpp")          end), -- right click
-   awful.button({ }, 4, function () mpc:seek(5) wimpc:emit_signal("update")       end), -- scroll up
-   awful.button({ }, 5, function () mpc:seek(-5) wimpc:emit_signal("update")      end)  -- scroll down
+   awful.button({ }, 1, function () mpc:toggle_play() wimpc_timer:emit_signal("timeout") end), -- left click
+   awful.button({ }, 2, function () awful.util.spawn("sonata")                           end), -- middle click
+   awful.button({ }, 3, function () awful.util.spawn("urxvt -e ncmpcpp")                 end), -- right click
+   awful.button({ }, 4, function () mpc:seek(5) wimpc_timer:emit_signal("timeout")       end), -- scroll up
+   awful.button({ }, 5, function () mpc:seek(-5) wimpc_timer:emit_signal("timeout")      end)  -- scroll down
 )))
--- Add signal
-wimpc:add_signal("update",
-function ()
-   wimpc.text = mpc:get_stat()
+
+-- update every 3 seconds mpcwidget via timer
+wimpc_timer = timer { timeout = 3 }
+wimpc_timer:add_signal("timeout", function()
+  wimpc.text = mpc:get_stat()
 end)
+wimpc_timer:start()
 -- }}}
 
 -- }}}
