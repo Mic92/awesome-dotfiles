@@ -28,8 +28,6 @@ require("calendar")
 require("markup")
 -- MPD library
 require("mpd"); mpc = mpd.new()
--- For sending to sockets
-socket = require("socket")
 
 -- }}}
 
@@ -121,21 +119,21 @@ function mpc.get_stat(self)
    local function naughty_notify(current)
       local t
       if current.isradio then
-        t = "<b>Radio:</b> "..trim(current.name, 25)
+	t = "<b>Radio:</b> "..trim(current.name, 25)
       else
-        t = string.format("%s %s\n%s %s\n%s %s",
-        "<b>Artist:</b>", trim(current.artist),
-        "<b>Album:</b>",  trim(current.album),
-        "<b>Title:</b>",  trim(current.title or
-        basename(current.file, 25)))
+	t = string.format("%s %s\n%s %s\n%s %s",
+	"<b>Artist:</b>", trim(current.artist),
+	"<b>Album:</b>",  trim(current.album),
+	"<b>Title:</b>",  trim(current.title or
+	basename(current.file, 25)))
       end
       naughty.notify ({
-        icon    = "/usr/share/pixmaps/sonata.png",
-        icon_size = 45,
-        opacity = 0.9,
-        timeout = 3,
-        text    = t,
-        margin  = 10, })
+	icon    = "/usr/share/pixmaps/sonata.png",
+	icon_size = 45,
+	opacity = 0.9,
+	timeout = 3,
+	text    = t,
+	margin  = 10, })
       end
    -- }}}
 
@@ -308,66 +306,58 @@ function (widget, args)
 end, 61)
 -- }}}
 
--- {{{ Volume level
-local volumeicon = widget({ type = "imagebox" }); volumeicon.image = image(icon_path.."vol.png")
--- Initialize widgets
-local volumewidget = widget({ type = "textbox" })
-local volumebar    = awful.widget.progressbar()
+--{{{ Pulseaudio
+local pulseicon = widget({ type = "imagebox" }); pulseicon.image = image(icon_path.."vol.png")
+---- Initialize widgets
+local pulsewidget = widget({ type = "textbox" })
+local pulsebar    = awful.widget.progressbar()
 
 -- Progressbar properties
-volumebar:set_width(8)
-volumebar:set_height(14)
-volumebar:set_vertical(true)
-volumebar:set_background_color(beautiful.fg_off_widget)
-volumebar:set_color(beautiful.fg_widget)
+pulsebar:set_width(8)
+pulsebar:set_height(14)
+pulsebar:set_vertical(true)
+pulsebar:set_background_color(beautiful.fg_off_widget)
+pulsebar:set_color(beautiful.fg_widget)
 -- Bar from green to red
-volumebar:set_gradient_colors({ '#AECF96', '#88A175', '#FF5656' })
-awful.widget.layout.margins[volumebar.widget] = { top = 2, bottom = 2, left = 2 }
+pulsebar:set_gradient_colors({ '#AECF96', '#88A175', '#FF5656' })
+awful.widget.layout.margins[pulsebar.widget] = { top = 2, bottom = 2, left = 2 }
 -- Enable caching
-vicious.cache(vicious.widgets.volume)
+vicious.cache(vicious.contrib.pulse)
 
--- Set device name
-local chan = "Master"
-
--- Register volume widgets
-vicious.register(volumebar,    vicious.widgets.volume, "$1",  5, chan)
-vicious.register(volumewidget, vicious.widgets.volume,
-function (widget, args)
-  if args[2] == "♩" then
-    volumebar:set_value(0)
-    return "Mute"
-  else return args[1].."%" end
-end, 5, chan)
--- Add signal
-volumewidget:add_signal("update", function ()
-  vicious.force({ volumewidget, volumebar })
+pulsewidget:add_signal("update", function ()
+  vicious.force({ pulsewidget, pulsebar})
 end)
+local function pulse(delta)
+  vicious.contrib.pulse.add(delta)
+  pulsewidget:emit_signal("update")
+end
 
--- Register buttons and Signals
-volumebar.widget:buttons( awful.util.table.join(
-awful.button({ }, 1, function () awful.util.spawn("pavucontrol") end), -- left click
 
+vicious.register(pulsebar, vicious.contrib.pulse, "$1",  5)
+vicious.register(pulsewidget, vicious.contrib.pulse,
+function (widget, args)
+  return string.format("%.f%%", args[1])
+end, 2)
+
+pulsewidget:buttons(awful.util.table.join(
+awful.button({ }, 1, function () awful.util.spawn("pavucontrol") end), --left click
 awful.button({ }, 2,
 function ()
-  awful.util.spawn("amixer -q sset "..chan.." toggle")    -- middle click
-  volumewidget:emit_signal("update")
+  vicious.contrib.pulse.toggle()
+  pulsewidget.emit_signal("update")
 end),
-
-awful.button({ }, 4,
+awful.button({ }, 4, -- scroll up
 function ()
-  awful.util.spawn("amixer -q sset "..chan.." 5%+")       -- scroll up
-  volumewidget:emit_signal("update")
+  pulse(5)
 end),
-
-awful.button({ }, 5,
+awful.button({ }, 5, -- scroll down
 function ()
-  awful.util.spawn("amixer -q sset "..chan.." 5%-")       -- scroll down
-  volumewidget:emit_signal("update")
-end)
-))
-volumewidget:buttons( volumebar.widget:buttons() )
-volumeicon:buttons( volumebar.widget:buttons() )
--- }}}
+  pulse(-5)
+end)))
+pulsebar.widget:buttons( pulsewidget:buttons() )
+pulseicon:buttons( pulsewidget:buttons() )
+
+--}}}
 
 -- {{{ CPU usage and temperature
 local cpuwidget = widget({ type = "textbox" })
@@ -635,7 +625,7 @@ for s = 1, screen.count() do
       {
 	mylayoutbox[s],
 	uptimewidget, mytextclock, clockicon,
-	volumebar.widget, volumewidget, volumeicon,
+	pulsebar.widget, pulsewidget, pulseicon,
 	s == 1 and mysystray or nil,
 	layout = awful.widget.layout.horizontal.rightleft
       },
@@ -740,7 +730,7 @@ local globalkeys = awful.util.table.join(
     -- {{{ Custom Bindings
     -- mpd control
     awful.key({ "Shift" }, "space", function () mpc:toggle_play() wimpc_timer:emit_signal("timeout") end),
-    -- Smplayer/Gnome control
+    -- Smplayer/Gnome mplayer control
     awful.key({ modkey2 }, "space", function ()
       local result = os.execute("smplayer -send-action play_or_pause") -- return 0 on succes
       if result ~= 0 then
@@ -748,7 +738,7 @@ local globalkeys = awful.util.table.join(
       end
     end),
 
-    -- easy way to share Screenshots over dropbox: The following code make a
+    -- Easy way to share Screenshots over dropbox: The following code make a
     -- Screenshot open it with Eye of Gnome, copy it to dropbox and put the
     -- public link into the X-clipboard
     awful.key({ }, "Print", function ()
@@ -758,13 +748,11 @@ local globalkeys = awful.util.table.join(
     -- {{{ Volume keyboard control
     awful.key({ modkey }, "Prior",
     function ()
-      awful.util.spawn('amixer set Master 5%+')
-      volumewidget:emit_signal("update")
+      pulse(5)
     end),
     awful.key({ modkey }, "Next",
     function ()
-      awful.util.spawn('amixer set Master 5%-')
-      volumewidget:emit_signal("update")
+      pulse(-5)
     end),
     -- }}}
 
