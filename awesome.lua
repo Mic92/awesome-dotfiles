@@ -112,6 +112,7 @@ function mpc.get_stat(self)
     local basename = s:match(".*/([^/]*)") or s
     -- Remove file extension too.
     -- Hint: MPD ignores files without a supported file extension.
+    -- Basename regex is derived from luarocks
     return basename:match("(.*)%.[^.]+")
   end
   -- }}}
@@ -120,13 +121,13 @@ function mpc.get_stat(self)
    local function naughty_notify(current)
       local t
       if current.isradio then
-	t = "<b>Radio:</b> "..trim(current.name, 25)
+        t = "<b>Radio:</b> "..trim(current.name, 25)
       else
-	t = string.format("%s %s\n%s %s\n%s %s",
-	"<b>Artist:</b>", trim(current.artist),
-	"<b>Album:</b>",  trim(current.album),
-	"<b>Title:</b>",  trim(current.title or
-	  basename(current.file, 25)))
+        t = string.format("%s %s\n%s %s\n%s %s",
+        "<b>Artist:</b>", trim(current.artist),
+        "<b>Album:</b>",  trim(current.album),
+        "<b>Title:</b>",  trim(current.title or
+        basename(current.file, 25)))
       end
       naughty.notify ({
         icon    = "/usr/share/pixmaps/sonata.png",
@@ -161,7 +162,6 @@ function mpc.get_stat(self)
      else
        local artist = trim(current.artist, 20)
        local title  = trim(current.title or
-			   -- Basename regex is derived from luarocks
 	 basename(current.file), 25)
        local total_time   = timeformat(status.time:match(":(%d+)"))
        local current_time = timeformat(status.time:match("(%d+):"))
@@ -177,7 +177,8 @@ function mpc.get_stat(self)
      self.last_songid = status.songid
 
      if status.state == "pause" then
-       -- Use inconspicuous color to push it to the background, depend on the theme.
+       -- Use inconspicuous color to push it to the background
+       -- depend on the theme.
        return "<span color='#505050'>"..now_playing.."</span>"
      else
        return now_playing
@@ -200,7 +201,7 @@ shifty.config.tags = {
   ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "pidgin" },
   ["4:doc"]     = { position = 4, exclusive = true },
   ["d:own"]     = { position = 5, exclusive = true },
-  ["p:cfm"]     = { position = 6, exclusive = true, spawn = "pcmanfm" },
+  ["p:cfm"]     = { position = 6, exclusive = true, spawn = "/usr/lib/gvfs/gvfs-gdu-volume-monitor& pcmanfm" },
   ["e:macs"]    = { position = 7, exclusive = true, spawn = "emacs" },
   ["a:rio"]     = { position = 8, exclusive = true, spawn = "sonata" },
   ["s:mplayer"] = { position = 9, exclusive = true, spawn = "smplayer" },
@@ -338,8 +339,6 @@ function (widget, args)
   else return args[1].."%" end
 end, 5, chan)
 -- Add signal
---volume = gears()
---gears.add_signal(volume, "update")
 volumewidget:add_signal("update", function ()
   vicious.force({ volumewidget, volumebar })
 end)
@@ -499,15 +498,15 @@ local newsicon = widget({ type = "imagebox" }); newsicon.image = image(icon_path
 -- don't show icon by default
 newsicon.visible = false
 local lib = os.getenv("HOME").."/music/podcasts/"
-vicious.register(newswidget, vicious.widgets.sumup,
+vicious.register(newswidget, vicious.contrib.sumup,
 function(widget, args)
   local text = ""
   for key, value in pairs(args) do
     if value > 0 then
       if value == 1 then
-        text = text..key.." "
+	text = text..key.." "
       else
-        text = text..string.format("%s: %d ", key, value)
+	text = text..string.format("%s: %d ", key, value)
       end
     end
   end
@@ -517,11 +516,11 @@ function(widget, args)
 end, 180,
 { pattern = ".*.(mp[34]|ogg|m4a)$",
   paths = { Tagess = lib.."Tagesschau \(512x288\)",
-            mobileMacs = lib.."mobileMacs",
-            HoRads = lib.."RadioTux GNU_Linux » HoRadS",
-            Spasspkt = lib.."WDR 2 Zugabe Spaßpaket",
-            NFSW = lib.."The Lunatic Fringe",
-            Alternativlos = lib.."Alternativlos"
+	    mobileMacs = lib.."mobileMacs",
+	    HoRads = lib.."RadioTux GNU_Linux » HoRadS",
+	    Spasspkt = lib.."WDR 2 Zugabe Spaßpaket",
+	    NFSW = lib.."The Lunatic Fringe",
+	    Alternativlos = lib.."Alternativlos"
 	    }}
 )
 
@@ -621,8 +620,8 @@ for s = 1, screen.count() do
 
     -- Create a tasklist widget
     mytasklist[s] = awful.widget.tasklist(function(c)
-                                              return awful.widget.tasklist.label.currenttags(c, s)
-                                          end, mytasklist.buttons)
+					      return awful.widget.tasklist.label.currenttags(c, s)
+					  end, mytasklist.buttons)
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
@@ -634,11 +633,11 @@ for s = 1, screen.count() do
       mytaglist[s],
       mypromptbox[s],
       {
-        mylayoutbox[s],
-        uptimewidget, mytextclock, clockicon,
-        volumebar.widget, volumewidget, volumeicon,
-        s == 1 and mysystray or nil,
-        layout = awful.widget.layout.horizontal.rightleft
+	mylayoutbox[s],
+	uptimewidget, mytextclock, clockicon,
+	volumebar.widget, volumewidget, volumeicon,
+	s == 1 and mysystray or nil,
+	layout = awful.widget.layout.horizontal.rightleft
       },
       mytasklist[s],
       layout = awful.widget.layout.horizontal.leftright,
@@ -651,10 +650,10 @@ for s = 1, screen.count() do
       iotextwidget, iowidget1, iowidget2,
       downicon, netwidget, upicon,
       {
-        pkgwidget, pkgicon,
-        wimpc, mpcicon,
-        newswidget, newsicon,
-        layout = awful.widget.layout.horizontal.rightleft,
+	pkgwidget, pkgicon,
+	wimpc, mpcicon,
+	newswidget, newsicon,
+	layout = awful.widget.layout.horizontal.rightleft,
       },
       layout = awful.widget.layout.horizontal.leftright,
       height = mystatusbox[s].height
@@ -882,6 +881,7 @@ end)
 
 client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+-- }}}
 
 -- {{{ Timer
 -- }}}
@@ -892,7 +892,7 @@ awful.util.spawn("habak -ms -hi /usr/share/awesome/themes/default/background.png
 
 -- {{{ Reload xcompmgr
 -- to avoid problems with the panels.
-os.execute("killall xcompmgr 2> /dev/null; xcompmgr -r 6 -o 0.75 -l -15 -t -15 -I 0.028 -O 0.03 -D 10 -C -F -n -s &")
+--os.execute("killall xcompmgr 2> /dev/null; xcompmgr -r 6 -o 0.75 -l -15 -t -15 -I 0.028 -O 0.03 -D 10 -C -F -n -s &")
 -- }}}
 
 -- {{{ Welcome Message
