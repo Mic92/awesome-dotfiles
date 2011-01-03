@@ -14,8 +14,6 @@ require("awful")
 require("awful.autofocus")
 --require("awful.rules")
 -- Theme handling library
---local image = require("oocairo").image_surface_create_from_png
---local gears = require("gears.object")
 require("beautiful")
 -- Notification library
 require("naughty")
@@ -28,6 +26,8 @@ require("calendar")
 require("markup")
 -- MPD library
 require("mpd"); mpc = mpd.new()
+
+require("inotify")
 
 -- }}}
 
@@ -74,8 +74,7 @@ local layouts =
 local function run_once(cmd, options)
     assert(type(cmd) == "string")
     return os.execute(
-       string.format("pgrep -u $USER -x %s>/dev/null || (%s %s&)",
-		     cmd, cmd, options or "")
+       string.format("pgrep -u $USER -x %s>/dev/null || (%s %s&)", cmd, cmd, options or "")
     )
 end
 -- }}}
@@ -187,6 +186,83 @@ function mpc.get_stat(self)
 end
 -- }}}
 
+-- {{{ Naughty log watcher
+local config = {}
+config.logs = {
+  mpd = { file = os.getenv("HOME").."/.mpd/log", },
+  pacman = { file = "/var/log/pacman.log", },
+  kernel = { file = "/var/log/messages.log", ignore = "Mark" },
+}
+config.logs_quiet = nil
+config.logs_interval = 1
+
+local logtimer = timer({timeout = config.logs_interval})
+logtimer:add_signal("timeout", function() log_watch() end)
+logtimer:start()
+
+function log_watch()
+  local events, nread, errno, errstr = inot:nbread()
+  if events then
+    for i, event in ipairs(events) do
+      for logname, log in pairs(config.logs) do
+        if event.wd == log.wd then log_changed(logname) end
+      end
+    end
+  end
+end
+
+function log_changed(logname)
+  local log = config.logs[logname]
+
+  -- read log file
+  local f = io.open(log.file)
+  if not f then 
+    -- File is not readable or does not exist!
+    return
+  end
+  local l = f:read("*a")
+  f:close()
+
+  -- first read just set length
+  if not log.len then
+    log.len = #l
+
+  -- if updated
+  else
+    local diff = l:sub(log.len +1, #l-1)
+
+    -- check if ignored
+    local ignored = false
+    for i, phr in ipairs(log.ignore or {}) do
+    if diff:find(phr) then ignored = true; break end
+    end
+
+    -- display log updates
+    if not (ignored or config.logs_quiet) then
+      naughty.notify{
+        title = '<span color="white">' .. logname .. "</span>: " .. log.file,
+        text = awful.util.escape(diff),
+        hover_timeout = 0.2, timeout = 15,
+      }
+    end
+
+    -- set last length
+    log.len = #l
+  end
+end
+
+function log_notify(logname, message)
+
+end
+
+local errno, errstr
+inot, errno, errstr = inotify.init(true)
+for logname, log in pairs(config.logs) do
+  log_changed(logname)
+  log.wd, errno, errstr = inot:add_watch(log.file, { "IN_MODIFY" })
+end
+-- }}}
+
 -- {{{ Shifty configuration
 -- tag settings
 -- the exclusive in each definition seems to be overhead, but it prevent new on-the-fly tags to be exclusive
@@ -200,6 +276,7 @@ shifty.config.tags = {
   ["4:doc"]     = { position = 4, exclusive = true },
   ["d:own"]     = { position = 5, exclusive = true },
   ["p:cfm"]     = { position = 6, exclusive = true, spawn = "/usr/lib/gvfs/gvfs-gdu-volume-monitor& pcmanfm" },
+--  ["p:cfm"]     = { position = 6, exclusive = true, spawn = "pcmanfm" },
   ["e:macs"]    = { position = 7, exclusive = true, spawn = "emacs" },
   ["a:rio"]     = { position = 8, exclusive = true, spawn = "sonata" },
   ["s:mplayer"] = { position = 9, exclusive = true, spawn = "smplayer" },
@@ -252,23 +329,32 @@ local myawesomemenu = {
   { "manual", terminal .. " -e man awesome" },
   { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/awesome.lua" },
   { "powersafe off", "xset s off" },
+  { "xrandr", "xrandr --auto" }, 
   { "restart", awesome.restart },
   { "quit", awesome.quit }
 }
 
--- reboot/shutdown as user using HAL. Make sure you using
--- ck-launch-session to start awesome and you are in the power group.
-local request_template  = "dbus-send --system --print-reply \
-				      --dest=\"org.freedesktop.Hal\" \
-			  /org/freedesktop/Hal/devices/computer\
-			  org.freedesktop.Hal.Device.SystemPowerManagement."
+-- reboot/shutdown as user using Consolkit and shutdown/hibernate using upower
+-- Make sure you using ck-launch-session to start awesome and you are in the power group.
+local upower = "dbus-send --print-reply \
+                          --system \
+                          --dest=org.freedesktop.UPower \
+                          /org/freedesktop/UPower \
+                          org.freedesktop.UPower."
+local consolkit = "dbus-send --print-reply \
+                             --system \
+                             --dest=\"org.freedesktop.ConsoleKit\"\
+                             /org/freedesktop/ConsoleKit/Manager\
+                             org.freedesktop.ConsoleKit.Manager."
 
 local mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
 				    { "open terminal", terminal },
 				    { "Firefox", "firefox" },
 				    { "gnome-control", "gnome-control-center" },
-				    { "Neustarten", request_template.."Reboot" },
-				    { "Herunterfahren", request_template.."Shutdown", icon_path.."power.png" }
+            { "Stromsparmodus", upower.."Suspend" },
+            { "Ruhezustand", upower.."Hibernate" },
+				    { "Neustarten", consolkit.."Restart" },
+				    { "Herunterfahren", consolkit.."Stop", icon_path.."power.png" },
 				  }
 				 })
 
@@ -872,15 +958,6 @@ client.add_signal("unfocus", function(c) c.border_color = beautiful.border_norma
 -- }}}
 
 -- {{{ Timer
--- }}}
-
--- {{{ Random Wallpaper - The new wallpaper of awesome is cooler
-awful.util.spawn("habak -ms -hi /usr/share/awesome/themes/default/background.png")
--- }}}
-
--- {{{ Reload xcompmgr
--- to avoid problems with the panels.
---os.execute("killall xcompmgr 2> /dev/null; xcompmgr -r 6 -o 0.75 -l -15 -t -15 -I 0.028 -O 0.03 -D 10 -C -F -n -s &")
 -- }}}
 
 -- {{{ Welcome Message
