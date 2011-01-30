@@ -1,0 +1,20 @@
+Idea
+----
+Inspired by anrxc I made my own icon set for awesome wm.
+I borrowed most of icons from the ubuntu mono light icons 
+and integrate them into awesome's default theme. 
+
+How to use
+----------
+I distribute all files in the Scalable Vector Graphics format (svg).
+In order to convert them to png use the Makefile:
+ make all
+This requires "convert" from the imagemagick.
+If your target is a different awesome theme, you can easily adapt 
+the color in one flush by modifiyng the example in Makefile.
+
+Contribution
+------------
+Improvements or extension of my set are welcome! 
+Send me an email or a pull request in github.
+
