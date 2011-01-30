@@ -21,7 +21,7 @@ require("naughty")
 require("shifty")
 -- widget library
 require("vicious")
-require("calendar")
+require("cal")
 -- little helper
 require("markup")
 -- MPD library
@@ -369,15 +369,9 @@ print("[awesome] initialize vicious")
 -- Create a textclock widget
 local mytextclock = awful.widget.textclock({ align = "right" })
 local clockicon = widget({ type = "imagebox" })
-clockicon.image = image(icon_path.."time.png")
+clockicon.image = image(icon_path.."clock.png")
 -- Register calendar tooltip
-local clockicon_tooltip = awful.tooltip({
-  objects = { clockicon },
-  timer_function = function()
-    local month, year = os.date('%m'), os.date('%Y')
-    return calendar.display(month, year)
-  end,
-})
+cal.register(clockicon, "<b>%s</b>")
 -- }}}
 
 -- {{{ Uptime
