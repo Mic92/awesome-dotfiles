@@ -1,12 +1,12 @@
---------------------------------------------
+----------------------------------------------
 -- awesome.lua - main config of my window manager
--- version: v3.4.8 (Never Know)
+-- version: v3.4.9 (Smack)
 -- D-Bus support: x
 -- os: archlinux i686
 -- cpu: Intel Pentium Dual CPU E2180 2.00GHz
 -- grapic: Mesa DRI Intel G33 GEM
 -- screen: 1900x1080
---------------------------------------------
+----------------------------------------------
 -- {{{ Awesome Library
 print("[awesome] Entered awesome.lua: "..os.date())
 
