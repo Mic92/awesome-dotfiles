@@ -1,0 +1,6 @@
+[submodule "lognotify"]
+	path = lognotify
+	url = git://github.com/Mic92/lognotify.git
+[submodule "vicious"]
+	path = vicious
+	url = git@github.com:Mic92/vicious.git
