@@ -35,6 +35,10 @@ beautiful.init("/usr/share/awesome/themes/default/theme.lua")
 --beautiful.init("/usr/share/awesome/themes/sky/theme.lua")
 --beautiful.init("/usr/share/awesome/themes/zenburn/theme.lua")
 
+-- Use normal colors instead of focus colors for tooltips
+beautiful.tooltip_bg_color = beautiful.bg_normal
+beautiful.tooltip_fg_color = beautiful.fg_normal
+
 -- This is used later as the default terminal and editor to run.
 local terminal   = os.getenv("TERMINAL") or "xterm"
 local editor     = os.getenv("EDITOR") or "nano"
@@ -308,7 +312,10 @@ local mytextclock = awful.widget.textclock({ align = "right" })
 local clockicon = widget({ type = "imagebox" })
 clockicon.image = image(icon_path.."clock.png")
 -- Register calendar tooltip
-cal.register(clockicon, "<b>%s</b>")
+-- To use fg_focus, you have to set a different tooltip_fg_color since the
+-- default is already beautiful.fg_focus.
+-- (beautiful.bg_normal in my case)
+cal.register(clockicon, markup.fg(beautiful.fg_focus,"<b>%s</b>"))
 -- }}}
 
 -- {{{ Uptime
@@ -348,7 +355,6 @@ local function pulse(delta)
   vicious.contrib.pulse.add(delta)
   pulsewidget:emit_signal("update")
 end
-
 
 vicious.register(pulsebar, vicious.contrib.pulse, "$1",  5)
 vicious.register(pulsewidget, vicious.contrib.pulse,
