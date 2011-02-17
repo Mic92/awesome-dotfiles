@@ -7,6 +7,21 @@
 -- and with the following changes:
 --   + use tooltip instead of naughty.notify 
 --   + rename it to cal
+--
+-- # How to Install #
+-- 1. Download the code and move it into your config directory 
+--	wget --no-check-certificate https://github.com/Mic92/awesome-dotfiles/raw/master/cal.lua -O $XDG_CONFIG_HOME/awesome/cal.lua
+-- 2. require it in your rc.lua
+-- 	require("cal")
+-- 3. attach the calendar to a widget of your choice (ex mytextclock)
+--	cal.register(mytextclock)
+--    If you don't like the default current day formating you can change it as following
+--	cal.register(mytextclock, "<b>%s</b>") -- now the current day is bold instead of underlined
+--
+-- # How to Use #
+-- Just hover with your mouse over the widget, you register and the calendar popup.
+-- On clicking or by using the mouse wheel the displayed month changes.
+-- Pressing Shift + Mouse click change the year. 
 
 local string = {format = string.format}
 local os = {date = os.date, time = os.time} 
