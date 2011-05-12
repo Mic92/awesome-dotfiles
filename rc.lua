@@ -446,14 +446,14 @@ neticon:buttons( netwidget:buttons() )
 local ioicon = widget({ type = "imagebox" })
 ioicon.image = image(icon_path.."disk.png") ioicon.visible = true
 local iowidget = widget({ type = "textbox" })
-vicious.register(iowidget, vicious.widgets.io, 
+vicious.register(iowidget, vicious.widgets.dio, 
 function (widget, args)
   local text = ""
-  if args["{sda_total_mb}"] ~= "0.0" then
-    text = string.format("60GB %s/%sMB ",  args["{sda_read_mb}"], args["{sda_write_mb}"])
+  if args["{sda total_mb}"] ~= "0.0" then
+    text = string.format("60GB %s/%sMB ",  args["{sda read_mb}"], args["{sda write_mb}"])
   end 
-  if args["{sdb_total_mb}"] ~= "0.0" then 
-    text = text..string.format("140GB %s/%sMB",  args["{sdb_write_mb}"], args["{sdb_write_mb}"])
+  if args["{sdb total_mb}"] ~= "0.0" then 
+    text = text..string.format("140GB %s/%sMB",  args["{sdb write_mb}"], args["{sdb write_mb}"])
   end
   if text ~= "" then 
     ioicon.visible = true return text
