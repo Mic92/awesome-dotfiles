@@ -41,15 +41,14 @@
 -- OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 -- SUCH DAMAGE.
 
-
-require("socket")
-
 -- Grab env
-local socket = socket
+local socket = require("socket")
 local string = string
 local tonumber = tonumber
 local setmetatable = setmetatable
 local os = os
+local next = next
+local print = print
 
 -- Music Player Daemon Lua library.
 module("mpd")
@@ -69,12 +68,14 @@ function new(settings)
     local client = {}
     if settings == nil then settings = {} end
 
-    client.hostname = settings.hostname or "localhost"
-    client.port     = settings.port or 6600
-    client.desc     = settings.desc or client.hostname
-    client.password = settings.password
-    client.timeout  = settings.timeout or 1
-    client.retry    = settings.retry or 60
+    client.hostname    = settings.hostname or "localhost"
+    client.port        = settings.port or 6600
+    client.desc        = settings.desc or client.hostname
+    client.password    = settings.password
+    client.timeout     = settings.timeout or 1
+    client.retry       = settings.retry or 60
+    client.idletimeout = settings.idletimeout or 0.1
+    client.idleretry   = settings.idleretry or settings.retry
 
     setmetatable(client, MPD_mt)
 
@@ -104,35 +105,9 @@ function MPD:send(action)
 
     -- connect to MPD server if not already done.
     if not self.connected then
-        local now = os.time();
-        if not self.last_try or (now - self.last_try) > self.retry then
-            self.socket = socket.tcp()
-            self.socket:settimeout(self.timeout, 't')
-            self.last_try = os.time()
-            self.connected = self.socket:connect(self.hostname, self.port)
-            if not self.connected then
-                return { errormsg = "could not connect" }
-            end
-
-            -- Read the server's hello message
-            local line = self.socket:receive("*l")
-            if not line:match("^OK MPD") then -- Invalid hello message?
-                self.connected = false
-                return { errormsg = string.format("invalid hello message: %s", line) }
-            else
-                _, _, self.version = string.find(line, "^OK MPD ([0-9.]+)")
-            end
-
-            -- send the password if needed
-            if self.password then
-                local rsp = self:send(string.format("password %s", self.password))
-                if rsp.errormsg then
-                    return rsp
-                end
-            end
-        else
-            local retry_sec = self.retry - (now - self.last_try)
-            return { errormsg = string.format("could not connect (retrying in %d sec)", retry_sec) }
+        local _, err = self:connect()
+        if err then
+            return { erromsg = err }
         end
     end
 
@@ -159,6 +134,40 @@ function MPD:send(action)
     return values
 end
 
+function MPD:connect()
+    local now = os.time();
+    if not self.last_try or (now - self.last_try) > self.retry then
+        self.socket = socket.tcp()
+        self.socket:settimeout(self.timeout, 't')
+        self.last_try = os.time()
+        self.connected = self.socket:connect(self.hostname, self.port)
+        if not self.connected then
+            return nil, "could not connect"
+        end
+
+        -- Read the server's hello message
+        local line = self.socket:receive("*l")
+        if not line:match("^OK MPD") then -- Invalid hello message?
+            self.connected = false
+            return nil, "invalid hello message: %s"
+        else
+            _, _, self.version = string.find(line, "^OK MPD ([0-9.]+)")
+        end
+
+        -- send the password if needed
+        if self.password then
+            local rsp = self:send(string.format("password %s", self.password))
+            if rsp.errormsg then
+                return rsp
+            end
+        end
+    else
+        local retry_sec = self.retry - (now - self.last_try)
+        return nil, string.format("could not connect (retrying in %d sec)", retry_sec)
+    end
+    return true
+end
+
 function MPD:next()
     return self:send("next")
 end
@@ -169,6 +178,63 @@ end
 
 function MPD:stop()
     return self:send("stop")
+end
+
+function MPD:idle()
+    local client = self.idleclient
+    if not client then
+        client = new{ timeout = self.idletimeout, retry = self.idleretry }
+        self.idleclient = client
+    end
+    if not client.connected then
+        local _, err = client:connect()
+        if err then
+            return { erromsg = err }
+        end
+    end
+
+    if not self.isidle then
+        self.isidle = true
+        client.socket:send("idle\n")
+    end
+
+    local events = {} 
+    local line, err = ""
+    while not line:match("^OK$") do
+        line, err = client.socket:receive("*l")
+
+        if err then
+            if err == "timeout" then
+                return {} 
+            end
+            self.connected = false
+            return self:idle()
+        end
+
+        if line:match("^ACK") then
+            return { errormsg = line }
+        end
+
+        for subsystem in string.gmatch(line, "[^:]+:%s(.+)") do
+            events[string.lower(subsystem)] = true
+        end
+        -- We have to resend "idle", if we got events, to get further updates
+        if next(events) then
+            self.isidle = false
+        end
+    end
+    return events
+end
+
+function MPD:noidle()
+    local client = self.idleclient
+    if client ~= nil then
+        -- Don't know whether this line is required, 
+        -- but it's a matter of style
+        client.socket:send("noidle")
+        client.socket:read("*l")
+        client.socket:close()
+    end
 end
 
 -- no need to check the new value, mpd will set the volume in [0,100]
@@ -211,8 +277,7 @@ end
 function MPD:seek(delta)
     local stats   = self:send("status")
     local current = stats.time:match("^(%d+):")
-    local wanted  = current + delta
-    return self:send(string.format("seek %d %d", stats.song, wanted))
+    return self:send(string.format("seek %d %d", stats.songid, current + delta))
 end
 
 function MPD:protocol_version()
