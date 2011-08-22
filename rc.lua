@@ -511,11 +511,13 @@ local mytasklist = {}
 mytasklist.buttons = awful.util.table.join(
    awful.button({ }, 1,
 		function (c)
-		   if c == client.focus then
-		      c.minimized = true
-		   else
+       -- Don't want to minimize with the mouse
+		   --if c == client.focus then
+		   --   c.minimized = true
+		   --else
+      if c ~= client.focus then
 		      if not c:isvisible() then
-			 awful.tag.viewonly(c:tags()[1])
+            awful.tag.viewonly(c:tags()[1])
 		      end
 		      -- This will also un-minimize
 		      -- the client, if needed
