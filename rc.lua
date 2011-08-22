@@ -137,20 +137,20 @@ shifty.config.tags = {
   -- order here matters, early rules will be applied first
   shifty.config.apps = {
      { match = { "Firefox", "Opera", "chromium",
-		 "Developer Tools" },                          tag = "1:web" },
+		 "Developer Tools" },                                      tag = "1:web" },
      { match = { "xterm", "urxvt" },                           tag = "2:dev", slave = true, honorsizehints = false },
      { match = { "buddy_list" },                               no_urgent = true},
-     { match = { "Pidgin", "skype" },                          tag = "3:im" },
+     { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
      { match = { "evince", "gvim", "keepassx", "OpenOffice", "libreoffice" }, tag = "4:doc" },
      { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
-     { match = { "gpodder", "JDownloader",
-		 "Nachricht", "Transmission" },                tag = "d:own" },
+     { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
      { match = { "*mplayer*", "MPlayer" },                     tag = "s:mplayer" },
-     { match = { "gimp%-image%-window" },                      tag = "g:imp" },
-     { match = { "pcmanfm", "nautilus" },                      tag = "p:cfm", slave = true, nopopup = true},
-     { match = { "emacs@" },                                   tag = "e:macs"},
+     { match = { "gimp" },                                     tag = "g:imp" },
+     { match = { "pcmanfm", "dolphin", "nautilus" },           tag = "p:cfm", slave = true, nopopup = true, no_urgent = true},
+     { match = { "emacs" },                                    tag = "e:macs"},
      { match = { "Wine" },                                     tag = "w:ine" },
-     { match = { "Eclipse" },                                  tag = "5:java" },
+     -- Yes, I use java for android development. Sorry guys.
+     { match = { "Eclipse", "NetBeans IDE" },                  tag = "5:java" },
      { match = { "gmrun", "gcalctool", "Komprimieren","Wicd*" },
        intrusive = true, ontop = true, above = true, dockable = true },
      -- buttons to resize/move clients
@@ -335,7 +335,7 @@ function (widget, args)
    else
       cpuicon.visible = false
    end
-end )
+end)
 -- Register buttons
 cpuwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e htop") end) )
 cpuicon:buttons( cpuwidget:buttons() )
