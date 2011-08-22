@@ -406,19 +406,18 @@ function(widget, args)
    if args[1] < 8 or db_locked ~= 0 then
       -- If you use powerpill, it is important to check wheter it runs!
       pkgicon.visible = false
+      return ""
    else
       pkgicon.visible = true
       return markup.urgent("<b>Updates</b> "..args[1]).." "
    end
-end, 180, "Arch" )
+end, 180, "Arch")
 
 pkgwidget:buttons( awful.button({ }, 1,
 function ()
    pkgwidget.visible, pkgicon.visible = false, false
-   awful.util.spawn(terminal..[[ -title 'Yaourt Upgrade' -e zsh -c \
-			  'yaourt -Su; \
-			  echo Finish. Press ENTER!; \
-			  read && exit']])
+   -- URxvt specific
+   awful.util.spawn(terminal.." -title 'Yaourt Upgrade' -e zsh -c 'yaourt -Syu --aur'")
 end))
 pkgicon:buttons( pkgwidget:buttons() )
 --}}}
