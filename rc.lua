@@ -6,7 +6,7 @@ awesome v3.4.10 (Exploder)
 os: archlinux i686
 cpu: Intel Pentium Dual CPU E2180 2.00GHz
 grapic: Mesa DRI Intel G33 GEM
-screen: 1900x1080
+screen: [1] 1900x1080
 --]]
 
 -- {{{ Awesome Library
