@@ -210,6 +210,7 @@ local mymainmenu = awful.menu({ items = {
 				   { "open terminal", terminal },
 				   { "Firefox", "firefox" },
 				   { "gnome-control", "gnome-control-center" },
+				   { "Bildschirmsperre", "slimlock" },
 				   { "Schlaf", upower.."Suspend" },
 				   { "Ruhezustand", upower.."Hibernate" },
 				   { "Neustarten", consolkit.."Restart", icon_path.."restart.png" },
@@ -665,6 +666,8 @@ local globalkeys = awful.util.table.join(
   awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
   awful.key({ modkey, "Control" }, "r", awesome.restart),
   awful.key({ modkey, "Shift"   }, "q", awesome.quit),
+  -- lockscreen
+  awful.key({ modkey, "Shift"   }, "s", function () awful.util.spawn("slimlock") end),
 
   awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
   awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
