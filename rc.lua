@@ -171,8 +171,10 @@ shifty.config.defaults = {
    layout = awful.layout.suit.tile.left,
    ncol = 1,
    mwfact = 0.60,
-   floatBars = true,
-   dockable = true,
+   floatBars      = true,
+   guess_name     = true,
+   guess_position = true,
+   dockable       = true,
 }
 
 shifty.modkey = modkey
