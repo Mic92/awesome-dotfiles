@@ -133,32 +133,36 @@ shifty.config.tags = {
    ["brasero"]   = { position = 13,exclusive = true},
 }
 
-  -- client settings
-  -- order here matters, early rules will be applied first
-  shifty.config.apps = {
-     { match = { "Firefox", "Opera", "chromium",
-		 "Developer Tools" },                                      tag = "1:web" },
-     { match = { "xterm", "urxvt" },                           tag = "2:dev", slave = true, honorsizehints = false },
-     { match = { "buddy_list" },                               no_urgent = true},
-     { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
-     { match = { "evince", "gvim", "keepassx", "OpenOffice", "libreoffice" }, tag = "4:doc" },
-     { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
-     { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
-     { match = { "*mplayer*", "MPlayer" },                     tag = "s:mplayer" },
-     { match = { "gimp" },                                     tag = "g:imp" },
-     { match = { "pcmanfm", "dolphin", "nautilus" },           tag = "p:cfm", slave = true, nopopup = true, no_urgent = true},
-     { match = { "emacs" },                                    tag = "e:macs"},
-     { match = { "Wine" },                                     tag = "w:ine" },
-     -- Yes, I use java for android development. Sorry guys.
-     { match = { "Eclipse", "NetBeans IDE" },                  tag = "5:java" },
-     { match = { "gmrun", "gcalctool", "Komprimieren","Wicd*" },
-       intrusive = true, ontop = true, above = true, dockable = true },
-     -- buttons to resize/move clients
-     { match = { "" }, buttons = awful.util.table.join(
-	  awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
-	  awful.button({ modkey }, 1, awful.mouse.client.move ),
-	  awful.button({ modkey }, 3, awful.mouse.client.resize )),
-       size_hints_honor = false
+-- client settings
+-- order here matters, early rules will be applied first
+shifty.config.apps = {
+  { match = { "Firefox", "Opera", "chromium", "Aurora", 
+  "Developer Tools" },                                      tag = "1:web" },
+  { match = { "xterm", "urxvt" },                           tag = "2:dev", slave = true, honorsizehints = false },
+  { match = { "buddy_list" },                               no_urgent = true},
+  { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
+  { match = { "evince", "gvim", "keepassx", "libreoffice" },tag = "4:doc" },
+  { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
+  { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
+  { match = { "*mplayer*", "MPlayer" },                     tag = "s:mplayer" },
+  { match = { "gimp" },                                     tag = "g:imp" },
+  { match = { "pcmanfm", "dolphin", "nautilus" },           tag = "p:cfm", slave = true, nopopup = true, no_urgent = true},
+  { match = { "emacs" },                                    tag = "e:macs"},
+  { match = { "Wine" },                                     tag = "w:ine" },
+  -- For android only ;)
+  { match = { "Eclipse", "NetBeans IDE" },                  tag = "5:java" },
+  { match = { "gmrun", "qalculate", "gcalctool", "Komprimieren","Wicd*" },
+    intrusive = true, ontop = true, above = true, dockable = true },
+  -- buttons to resize/move clients
+  { match = { "" }, buttons = awful.util.table.join(
+    awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
+    awful.button({ modkey }, 1, function (c)
+      client.focus = c
+      c:raise()
+      awful.mouse.client.move(c)
+    end),
+    awful.button({ modkey }, 3, awful.mouse.client.resize )),
+    size_hints_honor = false
   }
 }
 
