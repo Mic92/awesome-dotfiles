@@ -98,12 +98,12 @@ end
 
 local function run_once(process, cmd)
    assert(type(process) == "string")
-   local regex_killer = {
+   local escaped_chars = {
       ["+"]  = "%+", ["-"] = "%-",
       ["*"]  = "%*", ["?"]  = "%?" }
 
    for p in processwalker() do
-      if p:find(process:gsub("[-+?*]", regex_killer)) then
+      if p:find(process:gsub("[-+?*]", escaped_chars)) then
 	 return
       end
    end
