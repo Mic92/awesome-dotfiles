@@ -703,10 +703,12 @@ local globalkeys = awful.util.table.join(
 
   -- Calculator 
   awful.key({ modkey }, "c", function () awful.util.spawn("gcalctool") end),
+  awful.key({ modkey, "Control" }, "c", function () awful.util.spawn("qalculate-gtk") end),
   -- }}}
 
   -- Prompt
-  awful.key({ modkey }, "r",     function () mypromptbox[mouse.screen]:run() end),
+  --awful.key({ modkey }, "r",     function () mypromptbox[mouse.screen]:run() end),
+  awful.key({ modkey }, "r",     function () awful.util.spawn("gmrun") end),
 
   awful.key({ modkey }, "x",
   function ()
