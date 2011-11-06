@@ -435,7 +435,7 @@ local newsicon = widget({ type = "imagebox" }); newsicon.image = image(icon_path
 -- don't show icon by default
 newsicon.visible = false
 local lib = os.getenv("HOME").."/music/podcasts/"
-vicious.register(newswidget, vicious.contrib.sumup,
+vicious.register(newswidget, vicious.contrib.countfiles,
 function(widget, args)
    local text = ""
    for key, value in pairs(args) do
@@ -463,15 +463,9 @@ end, 180,
 -- Register Buttons in all widget
 newswidget:buttons(
    awful.util.table.join(
-      awful.button({ }, 1,
-		   function ()  -- left click -> play news
-		      vicious.force({ newswidget })
-		      if newswidget.text then
-			 local play_news = string.format('smplayer "%sTagesschau', lib)
-			 awful.util.spawn(play_news)
-		      end
-		   end),
-      awful.button({ }, 3, function () awful.util.spawn("gpodder") end) -- right click
+      awful.button({ }, 1, -- left click -> open podcast client
+		   function () awful.util.spawn("gpodder") end),
+      awful.button({ }, 3, function () vicious.force({newswidget}) end) -- right click -> update
 ))
 -- }}}
 
