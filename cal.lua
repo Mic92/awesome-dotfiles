@@ -84,14 +84,16 @@ function register(mywidget, custom_current_day_format)
 
 	if not tooltip then
 		tooltip = awful.tooltip({})
+                function tooltip:update()
+                        local month, year = os.date('%m'), os.date('%Y')
+                        state = {month, year}
+                        tooltip:set_text(string.format('<span font_desc="monospace">%s</span>', displayMonth(month, year, 2)))
+                end
+                tooltip:update()
 	end
 	tooltip:add_to_object(mywidget)
 
-	mywidget:add_signal("mouse::enter", function()
-		local month, year = os.date('%m'), os.date('%Y')
-		state = {month, year}
-		tooltip:set_text(string.format('<span font_desc="monospace">%s</span>', displayMonth(month, year, 2)))
-	end)
+	mywidget:add_signal("mouse::enter",tooltip.update)
 
 	mywidget:buttons(awful.util.table.join(
 	awful.button({ }, 1, function()
