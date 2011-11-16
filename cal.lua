@@ -68,6 +68,12 @@ function displayMonth(month,year,weekStart)
                 lines = lines .. "  " .. x
                 writeLine = writeLine + 1
         end
+        if stDay + mthDays < 36 then
+                lines = lines .. "\n"
+        end
+        if stDay + mthDays < 29 then
+                lines = lines .. "\n"
+        end
         local header = os.date("%B %Y\n",os.time{year=year,month=month,day=1})
 
         return header .. "\n" .. lines
