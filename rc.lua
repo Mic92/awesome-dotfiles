@@ -833,8 +833,9 @@ client.add_signal("manage", function (c, startup)
   -- awful.titlebar.add(c, { modkey = modkey })
 
   -- Pidgins Buddy List is always urgent on startup
-  if c.role == "buddy_list"  then
+  if c.role == "roster" and c.name:find("Gajim") then
     awful.client.urgent.delete(c)
+    awful.client.setslave(c)
   end
 
   -- Enable sloppy focus
@@ -854,8 +855,8 @@ client.add_signal("manage", function (c, startup)
 
      -- Put windows in a smart way, only if they does not set an initial position.
      if not c.size_hints.user_position and not c.size_hints.program_position then
-	awful.placement.no_overlap(c)
-	awful.placement.no_offscreen(c)
+       awful.placement.no_overlap(c)
+       awful.placement.no_offscreen(c)
      end
   end
 end)
