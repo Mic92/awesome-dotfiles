@@ -329,33 +329,28 @@ pulseicon:buttons( pulsewidget:buttons() )
 
 --}}}
 
--- {{{ CPU usage and temperature
+-- {{{ CPU usage
 local cpuwidget = widget({ type = "textbox" })
 local cpuicon = widget({ type = "imagebox" }); cpuicon.image = image(icon_path.."cpu.png")
 -- Initialize widgets
 vicious.register(cpuwidget, vicious.widgets.cpu,
 function (widget, args)
-   if args[1] > 0 then
-      cpuicon.visible = true
-      local t
-      -- list all cpu cores
-      for i=1,#args do
-	 -- alerts, if system is stressed
-	 --args[i] = markup.fg(markup.gradient(1,100,args[i]),args[i])
-	 if args[i] > 90 then
-	    args[i] = markup.fg("#FF5656", args[i]) -- light red
-	 elseif args[i] > 70 then
-	    args[i] = markup.fg("#AECF96", args[i]) -- light green
-	 end
+  local text
+  -- list all cpu cores
+  for i=1,#args do
+    -- alerts, if system is stressed
+    --args[i] = markup.fg(markup.gradient(1,100,args[i]),args[i])
+    if args[i] > 90 then
+      args[i] = markup.fg("#FF5656", args[i]) -- light red
+    elseif args[i] > 70 then
+      args[i] = markup.fg("#AECF96", args[i]) -- light green
+    end
 
-	 -- append to list
-	 if i > 2 then t = t.."/"..args[i].."%"
-	 else t = args[i].."%" end
-      end
-      return t
-   else
-      cpuicon.visible = false
-   end
+    -- append to list
+    if i > 2 then text = text.."/"..args[i].."%"
+    else text = args[i].."%" end
+  end
+  return text
 end)
 -- Register buttons
 cpuwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e htop") end) )
