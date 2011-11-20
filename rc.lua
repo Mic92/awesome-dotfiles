@@ -249,18 +249,15 @@ clockicon.image = image(icon_path.."clock.png")
 -- default is already beautiful.fg_focus.
 -- (beautiful.bg_normal in my case)
 cal.register(clockicon, markup.fg(beautiful.fg_focus,"<b>%s</b>"))
+local uptimetooltip = awful.tooltip({})
+uptimetooltip:add_to_object(mytextclock)
+mytextclock:add_signal("mouse::enter",  function()
+  local args = vicious.widgets.uptime()
+  local text = (" <b>Uptime</b> %dd %dh %dmin "):format(args[1], args[2], args[3])
+  uptimetooltip:set_text(text)
+end)
 -- }}}
 
--- {{{ Uptime
-local uptimewidget = widget({ type = "textbox" })
-vicious.register(uptimewidget, vicious.widgets.uptime,
-function (widget, args)
-   local t = string.format("/ %sd %sh %smin", args[1], args[2], args[3])
-   if tonumber(args[4]) > 0.10 then
-      t = t..string.format(" <b>Load</b> %s ", args[4])
-   end
-   return t
-end, 61)
 -- }}}
 
 --{{{ Pulseaudio
@@ -577,7 +574,7 @@ for s = 1, screen.count() do
     mypromptbox[s],
     {
       mylayoutbox[s],
-      uptimewidget, mytextclock, clockicon,
+      mytextclock, clockicon,
       pulsebar.widget, pulsewidget, pulseicon,
       s == 1 and mysystray or nil,
       layout = awful.widget.layout.horizontal.rightleft
