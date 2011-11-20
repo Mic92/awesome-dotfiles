@@ -380,12 +380,17 @@ local netwidget = widget({ type = "textbox" })
 local neticon  = widget({ type = "imagebox" }); neticon.image = image(icon_path.."netio.png")
 vicious.register(netwidget, vicious.widgets.net,
 function (widget, args)
-   local down, up, text = args["{eth0 down_kb}"], args["{eth0 up_kb}"]
-   if down ~= "0.0" or up ~= "0.0" then
-      text = ("%skb/%skb"):format(args["{eth0 down_kb}"], args["{eth0 up_kb}"])
+   local down, up
+   if args["{eth0 down_kb}"] ~= "0.0" or args["{eth0 up_kb}"] ~= "0.0" then
+      down, up = args["{eth0 down_kb}"], args["{eth0 up_kb}"]
+   elseif args["{wlan0 down_kb}"] ~= "0.0" or args["{wlan0 up_kb}"] ~= "0.0" then
+      down, up = args["{wlan0 down_kb}"], args["{wlan0 up_kb}"]
+   else
+     neticon.visible = false
+     return
    end
-   neticon.visible = (text ~= nil)
-   return text
+   neticon.visible = true
+   return string.format("%skb/%skb", up, down)
 end, 5)
 -- Register buttons
 netwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e sudo nethogs -d 2") end) )
