@@ -299,8 +299,14 @@ vicious.cache(vicious.contrib.pulse)
 pulsewidget:add_signal("update", function ()
   vicious.force({ pulsewidget, pulsebar})
 end)
-local function pulse(delta)
+
+local function pulse_volume(delta)
   vicious.contrib.pulse.add(delta)
+  pulsewidget:emit_signal("update")
+end
+
+local function pulse_toggle()
+  vicious.contrib.pulse.toggle(delta)
   pulsewidget:emit_signal("update")
 end
 
@@ -308,23 +314,16 @@ vicious.register(pulsebar, vicious.contrib.pulse, "$1",  5)
 vicious.register(pulsewidget, vicious.contrib.pulse,
 function (widget, args)
    return string.format("%.f%%", args[1])
-end, 2)
+end, 7)
 
 pulsewidget:buttons(awful.util.table.join(
 awful.button({ }, 1, function () awful.util.spawn("pavucontrol") end), --left click
 awful.button({ }, 2,
-function ()
-   vicious.contrib.pulse.toggle()
-   pulsewidget.emit_signal("update")
-end),
+function () pulse_toggle() end),
 awful.button({ }, 4, -- scroll up
-   function ()
-      pulse(5)
-   end),
+   function () pulse_volume(5)  end),
 awful.button({ }, 5, -- scroll down
-   function ()
-      pulse(-5)
-   end)))
+   function () pulse_volume(-5) end)))
 pulsebar.widget:buttons( pulsewidget:buttons() )
 pulseicon:buttons( pulsewidget:buttons() )
 
@@ -707,17 +706,12 @@ local globalkeys = awful.util.table.join(
     awful.util.spawn("scrot -e 'eog $f; mv $f Dropbox/Public;dropbox puburl Dropbox/Public/$f | xclip'")
   end),
 
-  -- {{{ Volume keyboard control
-  awful.key({ modkey }, "Prior",
-	    function ()
-	       pulse(5)
-	    end),
-  awful.key({ modkey }, "Next",
-	    function ()
-	       pulse(-5)
-	    end),
+  -- Volume keyboard control
+  awful.key({ }, "XF86AudioRaiseVolume", function () pulse_volume(5) end),
+  awful.key({ }, "XF86AudioLowerVolume", function () pulse_volume(-5)end),
+  awful.key({ }, "XF86AudioMute",        function () pulse_toggle()  end),
 
-  -- Calculator 
+  -- Calculator
   awful.key({ modkey }, "c", function () awful.util.spawn("gcalctool") end),
   awful.key({ modkey, "Control" }, "c", function () awful.util.spawn("qalculate-gtk") end),
   -- }}}
