@@ -428,7 +428,7 @@ function(widget, args)
       pkgicon.visible = true
       return markup.urgent("<b>Updates</b> "..args[1]).." "
    end
-end, 180, "Arch")
+end, 183, "Arch")
 
 pkgwidget:buttons( awful.button({ }, 1,
 function ()
@@ -460,7 +460,7 @@ function(widget, args)
    -- toggle icon
    newsicon.visible = (text ~= "")
    return text
-end, 180,
+end, 181,
 { pattern = ".*.(mp[34]|ogg|m4a)$",
   paths = { Tagess = lib.."Tagesschau",
 	    mobileMacs = lib.."mobileMacs",
