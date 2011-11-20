@@ -485,7 +485,6 @@ local mpc = mpc()
 local wimpc = widget({ type = "textbox" })
 local mpcicon = widget({ type = "imagebox" })
 mpcicon.image = image(icon_path.."music.png")
-
 mpc.attach(wimpc)
 
 -- Register Buttons in both widget
@@ -706,7 +705,7 @@ local globalkeys = awful.util.table.join(
   awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
   awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
   awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
-
+  --}}
 
   -- {{{ Custom Bindings
   -- mpd control
@@ -718,6 +717,9 @@ local globalkeys = awful.util.table.join(
       awful.util.spawn("dbus-send / com.gnome.mplayer.Play") -- if state is play it pause
     end
   end),
+  awful.key({ }, "XF86AudioPlay", function () mpc:toggle_play() mpc:update() end),
+  awful.key({ }, "XF86AudioNext", function () mpc:next()        mpc:update() end),
+  awful.key({ }, "XF86AudioPrev", function () mpc:previous()    mpc:update() end),
 
   -- Easy way to share Screenshots over dropbox: The following code make a
   -- Screenshot open it with Eye of Gnome, copy it to dropbox and put the
