@@ -505,6 +505,28 @@ awful.button({ }, 5, function () mpc:seek(-5) mpc:update()           end)  -- sc
 )))
 -- }}}
 
+--{{{ Wifi
+local wifiwidget = widget({ type = "textbox"})
+local wifiicon   = widget({ type = "imagebox" })
+local wifitooltip= awful.tooltip({})
+wifitooltip:add_to_object(wifiwidget)
+wifiicon.image = image(icon_path.."wifi.png")
+vicious.register(wifiwidget, vicious.widgets.wifi, function(widget, args)
+  -- ${ssid} ${mode} ${chan} ${rate} ${link} ${linp} ${sign}
+  local tooltip = ("<b>mode</b> %s <b>chan</b> %s <b>rate</b> %s Mb/s"):format(
+                  args["{mode}"], args["{chan}"], args["{rate}"])
+  local quality = 0
+  if args["{linp}"] > 0 then
+    quality = args["{link}"] / args["{linp}"] * 100
+  end
+  wifitooltip:set_text(tooltip)
+  return ("%s Qual: %.1f%%"):format(args["{ssid}"], quality)
+end, 7, "wlan0")
+wifiicon:buttons( wifiwidget:buttons(awful.util.table.join(
+awful.button({ }, 1, function ()  vicious.force{wifiwidget} end), -- left click
+awful.button({ }, 3, function ()  vicious.force{wifiwidget} end) -- right click
+)))
+--}}}
 -- }}}
 
 -- {{{ Wibox
@@ -597,6 +619,7 @@ for s = 1, screen.count() do
       mytextclock, clockicon,
       pulsebar.widget, pulsewidget, pulseicon,
       batbar.widget, batwidget, baticon,
+      wifiwidget, wifiicon,
       s == 1 and mysystray or nil,
       layout = awful.widget.layout.horizontal.rightleft
     },
