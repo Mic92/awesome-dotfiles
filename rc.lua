@@ -355,6 +355,14 @@ end)
 -- Register buttons
 cpuwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e htop") end) )
 cpuicon:buttons( cpuwidget:buttons() )
+
+-- }}}
+
+-- {{{ CPU temperature
+local thermalwidget = widget({ type = "textbox" })
+local thermalicon = widget({ type = "imagebox" })
+thermalicon.image = image(icon_path.."temp.png")
+vicious.register(thermalwidget, vicious.widgets.thermal, "$1°C", 5, {"thermal_zone0", "sys"})
 -- }}}
 
 -- {{{ Memory usage
@@ -599,6 +607,7 @@ for s = 1, screen.count() do
 
   mystatusbox[s].widgets = {
     cpuicon, cpuwidget,
+    thermalicon, thermalwidget,
     memicon, memwidget,
     ioicon, iowidget,
     neticon, netwidget,
