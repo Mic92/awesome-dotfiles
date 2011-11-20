@@ -396,19 +396,7 @@ neticon:buttons( netwidget:buttons() )
 local ioicon = widget({ type = "imagebox" })
 ioicon.image = image(icon_path.."disk.png") ioicon.visible = true
 local iowidget = widget({ type = "textbox" })
-vicious.register(iowidget, vicious.widgets.dio,
-function (widget, args)
-   local text = ""
-   -- display hdd only, if significant operations take place
-   if args["{sda total_mb}"] ~= "0.0" then
-      text = ("60GB %s/%sMB "):format(args["{sda read_mb}"], args["{sda write_mb}"])
-   end
-   if args["{sdb total_mb}"] ~= "0.0" then
-      text = text..("140GB %s/%sMB"):format(args["{sdb read_mb}"], args["{sdb write_mb}"])
-   end
-   ioicon.visible = (text ~= "")
-   return text
-end, 3)
+vicious.register(iowidget, vicious.widgets.dio, "SSD ${sda read_mb}/${sda write_mb}MB", 3)
 -- Register buttons
 iowidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e iotop") end) )
 -- }}}
