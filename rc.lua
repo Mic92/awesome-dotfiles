@@ -258,6 +258,24 @@ mytextclock:add_signal("mouse::enter",  function()
 end)
 -- }}}
 
+-- {{{ Battery
+local batwidget = widget({ type = "textbox" })
+local baticon   = widget({ type = "imagebox"})
+baticon.image   = image(icon_path.."bat.png")
+local batbar    = awful.widget.progressbar()
+
+-- Progressbar properties
+batbar:set_width(8)
+batbar:set_height(14)
+batbar:set_vertical(true)
+batbar:set_background_color(beautiful.fg_off_widget)
+batbar:set_color(beautiful.fg_widget)
+batbar:set_gradient_colors({ '#FF5656', '#88A175', '#AECF96'})
+awful.widget.layout.margins[batbar.widget] = { top = 2, bottom = 2, left = 1, right = 2 }
+
+vicious.cache(vicious.widgets.bat)
+vicious.register(batbar, vicious.widgets.bat, "$2",  11, "BAT1")
+vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 11, "BAT1")
 -- }}}
 
 --{{{ Pulseaudio
@@ -576,6 +594,7 @@ for s = 1, screen.count() do
       mylayoutbox[s],
       mytextclock, clockicon,
       pulsebar.widget, pulsewidget, pulseicon,
+      batbar.widget, batwidget, baticon,
       s == 1 and mysystray or nil,
       layout = awful.widget.layout.horizontal.rightleft
     },
