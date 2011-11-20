@@ -120,7 +120,7 @@ shifty.config.tags = {
    ["1:web"]     = { position = 1, exclusive = true, init = true, nopopup = true,
 		     run = function () run_once(browser) end },
    ["2:dev"]     = { position = 2, exclusive = true, spawn = terminal },
-   ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "gajim" },
+   ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "gajim", mwfact = 0.8, layout = awful.layout.suit.tile.right},
    ["4:doc"]     = { position = 4, exclusive = true },
    ["5:java"]    = { position = 5, exclusive = true },
    ["d:own"]     = { position = 6, exclusive = true },
@@ -136,7 +136,7 @@ shifty.config.tags = {
 -- client settings
 -- order here matters, early rules will be applied first
 shifty.config.apps = {
-  { match = { "Firefox", "Opera", "chromium", "Aurora", 
+  { match = { "Firefox", "Opera", "chromium", "Aurora",
   "Developer Tools" },                                      tag = "1:web" },
   { match = { "xterm", "urxvt" },                           tag = "2:dev", slave = true, honorsizehints = false },
   { match = { "buddy_list" },                               no_urgent = true},
