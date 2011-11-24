@@ -1,12 +1,10 @@
 --[[
 awesome.lua - main config of my window manager
-awesome v3.4.10 (Exploder)
- • Build: Jun 11 2011 11:14:53 for i686 by gcc version 4.6.0 (arch@m50vn)
- • D-Bus support: ✔
-os: archlinux i686
-cpu: Intel Pentium Dual CPU E2180 2.00GHz
-grapic: Mesa DRI Intel G33 GEM
-screen: [1] 1900x1080
+ awesome v3.4.11 (Pickapart)
+os: archlinux x86_64
+cpu: Intel(R) Core(TM) i3-2310M CPU @ 2.10GHz
+grapic:  Intel Graphics 3000
+screen: [1] 1366x768
 --]]
 
 -- {{{ Awesome Library
@@ -31,6 +29,31 @@ require("lfs")
 require("markup")
 -- MPD library
 require("mpd"); mpc = mpd.new()
+-- }}}
+
+-- {{{ Error handling
+-- Check if awesome encountered an error during startup and fell back to
+-- another config (This code will only ever execute for the fallback config)
+if awesome.startup_errors then
+    naughty.notify({ preset = naughty.config.presets.critical,
+                     title = "Oops, there were errors during startup!",
+                     text = awesome.startup_errors })
+end
+
+-- Handle runtime errors after startup
+do
+    local in_error = false
+    awesome.add_signal("debug::error", function (err)
+        -- Make sure we don't go into an endless error loop
+        if in_error then return end
+        in_error = true
+
+        naughty.notify({ preset = naughty.config.presets.critical,
+                         title = "Oops, an error happened!",
+                         text = err })
+        in_error = false
+    end)
+end
 -- }}}
 
 -- {{{ Variable definitions
@@ -117,7 +140,7 @@ end
 -- the follow function make it easier to swap tags
 
 shifty.config.tags = {
-   ["1:web"]     = { position = 1, exclusive = true, init = true, nopopup = true,
+   ["1:web"]     = { position = 1, screen = 2, exclusive = true, init = true, nopopup = true,
 		     run = function () run_once(browser) end },
    ["2:dev"]     = { position = 2, exclusive = true, spawn = terminal },
    ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "gajim", mwfact = 0.8, layout = awful.layout.suit.tile.right},
@@ -128,9 +151,10 @@ shifty.config.tags = {
    ["e:macs"]    = { position = 8, exclusive = true, spawn = "emacs" },
    ["a:rio"]     = { position = 9, exclusive = true, spawn = "sonata" },
    ["s:mplayer"] = { position = 10,exclusive = true, spawn = "smplayer" },
-   ["w:ine"]     = { position = 11,exclusive = true},
-   ["g:imp"]     = { position = 12,exclusive = true, spawn = "gimp-2.7" },
-   ["brasero"]   = { position = 13,exclusive = true},
+   ["t:hunar"]   = { position = 11,exclusive = true, spawn = "thunar" },
+   ["w:ine"]     = { position = 12,exclusive = true},
+   ["g:imp"]     = { position = 13,exclusive = true, spawn = "gimp-2.7" },
+   ["brasero"]   = { position = 14,exclusive = true},
 }
 
 -- client settings
@@ -145,6 +169,7 @@ shifty.config.apps = {
   { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
   { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
   { match = { "*mplayer*", "MPlayer" },                     tag = "s:mplayer" },
+  { match = { "thunar"},                                    tag = "t:hunar" },
   { match = { "gimp" },                                     tag = "g:imp" },
   { match = { "pcmanfm", "dolphin", "nautilus" },           tag = "p:cfm", slave = true, nopopup = true, no_urgent = true},
   { match = { "emacs" },                                    tag = "e:macs"},
@@ -211,8 +236,14 @@ local mymainmenu = awful.menu({ items = {
 				   { "Firefox", "firefox" },
 				   { "gnome-control", "gnome-control-center" },
 				   { "Bildschirmsperre", "slimlock" },
-				   { "Schlaf", upower.."Suspend" },
-				   { "Ruhezustand", upower.."Hibernate" },
+				   { "Schlaf", function()
+             awful.util.spawn("slimlock")
+             awful.util.spawn(upower.."Suspend")
+           end },
+				   { "Ruhezustand", function ()
+             awful.util.spawn("slimlock")
+             awful.util.spawn(upower.."Hibernate")
+           end },
 				   { "Neustarten", consolkit.."Restart", icon_path.."restart.png" },
 				   { "Herunterfahren", consolkit.."Stop", icon_path.."poweroff.png" },
 			     }})
@@ -504,7 +535,6 @@ local wifitooltip= awful.tooltip({})
 wifitooltip:add_to_object(wifiwidget)
 wifiicon.image = image(icon_path.."wifi.png")
 vicious.register(wifiwidget, vicious.widgets.wifi, function(widget, args)
-  -- ${ssid} ${mode} ${chan} ${rate} ${link} ${linp} ${sign}
   local tooltip = ("<b>mode</b> %s <b>chan</b> %s <b>rate</b> %s Mb/s"):format(
                   args["{mode}"], args["{chan}"], args["{rate}"])
   local quality = 0
@@ -512,10 +542,10 @@ vicious.register(wifiwidget, vicious.widgets.wifi, function(widget, args)
     quality = args["{link}"] / args["{linp}"] * 100
   end
   wifitooltip:set_text(tooltip)
-  return ("%s Qual: %.1f%%"):format(args["{ssid}"], quality)
+  return ("%s: %.1f%%"):format(args["{ssid}"], quality)
 end, 7, "wlan0")
 wifiicon:buttons( wifiwidget:buttons(awful.util.table.join(
-awful.button({ }, 1, function ()  vicious.force{wifiwidget} end), -- left click
+awful.button({ }, 1, function ()  awful.util.spawn("wicd-gtk")end), -- left click
 awful.button({ }, 3, function ()  vicious.force{wifiwidget} end) -- right click
 )))
 --}}}
@@ -786,6 +816,7 @@ local keystore = {
    "e",  --> emacs
    "a",  --> ario
    "s",  --> smplayer
+   "t",  --> thunar
    "w",  --> wine
    "g",  --> gimp
 }
@@ -853,7 +884,7 @@ client.add_signal("manage", function (c, startup)
   if not startup then
      -- Set the windows at the slave,
      -- i.e. put it at the end of others instead of setting it master.
-     awful.client.setslave(c)
+     --awful.client.setslave(c)
 
      -- Put windows in a smart way, only if they does not set an initial position.
      if not c.size_hints.user_position and not c.size_hints.program_position then
