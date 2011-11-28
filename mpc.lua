@@ -90,7 +90,8 @@ local function new(settings)
 		--elseif events.player or events.playlist then
 		-- local status = self:send("status")
 		local status = mpc:send("status")
-		if status.erormsg then
+
+		if status.errormsg ~= nil then
 			return "MPD Problem: "..status.errormsg
 		else
 			if status.state == "stop" then return end

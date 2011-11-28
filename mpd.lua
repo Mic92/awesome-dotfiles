@@ -107,7 +107,7 @@ function MPD:send(action)
     if not self.connected then
         local _, err = self:connect()
         if err then
-            return { erromsg = err }
+            return { errormsg = err }
         end
     end
 
