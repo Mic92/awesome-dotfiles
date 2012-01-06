@@ -237,11 +237,9 @@ local mymainmenu = awful.menu({ items = {
 				   { "gnome-control", "gnome-control-center" },
 				   { "Bildschirmsperre", "slimlock" },
 				   { "Schlaf", function()
-             awful.util.spawn("slimlock")
              awful.util.spawn(upower.."Suspend")
            end },
 				   { "Ruhezustand", function ()
-             awful.util.spawn("slimlock")
              awful.util.spawn(upower.."Hibernate")
            end },
 				   { "Neustarten", consolkit.."Restart", icon_path.."restart.png" },
