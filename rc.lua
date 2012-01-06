@@ -58,8 +58,8 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
-beautiful.init("/usr/share/awesome/themes/default/theme.lua")
---beautiful.init("/usr/share/awesome/themes/sky/theme.lua")
+--beautiful.init("/usr/share/awesome/themes/default/theme.lua")
+beautiful.init(awful.util.getdir("config").."/theme/theme.lua")
 --beautiful.init("/usr/share/awesome/themes/zenburn/theme.lua")
 
 -- Use normal colors instead of focus colors for tooltips
@@ -296,7 +296,7 @@ local batbar    = awful.widget.progressbar()
 
 -- Progressbar properties
 batbar:set_width(8)
-batbar:set_height(14)
+batbar:set_height(20)
 batbar:set_vertical(true)
 batbar:set_background_color(beautiful.fg_off_widget)
 batbar:set_color(beautiful.fg_widget)
@@ -316,7 +316,7 @@ local pulsebar    = awful.widget.progressbar()
 
 -- Progressbar properties
 pulsebar:set_width(8)
-pulsebar:set_height(14)
+pulsebar:set_height(20)
 pulsebar:set_vertical(true)
 pulsebar:set_background_color(beautiful.fg_off_widget)
 pulsebar:set_color(beautiful.fg_widget)
