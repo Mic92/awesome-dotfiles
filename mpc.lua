@@ -31,6 +31,7 @@ local function timeformat(t)
 end
 
 local function basename(s)
+        if s == nil then return "" end
 	-- Remove all slashes, if any.
 	local basename = s:match(".*/([^/]*)") or s
 	-- Remove file extension too.
