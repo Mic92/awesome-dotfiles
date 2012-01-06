@@ -837,7 +837,7 @@ for i = 1, #keystore do
 		if client.focus then
 		   local t = shifty.getpos(i)
 		   awful.client.movetotag(t)
-		   awfu.tag.viewonly(t)
+		   awful.tag.viewonly(t)
 		end
 	     end),
 
