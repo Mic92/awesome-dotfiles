@@ -909,4 +909,8 @@ naughty.notify{
   os.getenv("USER"), awful.util.pread("hostname"):match("[^\n]*"), os.date()),
   timeout = 7 }
 -- }}}
+
+-- Java helper
+awful.util.spawn("wmname LG3D")
+
 -- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=2:tabstop=2:softtabstop=2:textwidth=80
