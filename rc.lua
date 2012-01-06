@@ -143,7 +143,7 @@ shifty.config.tags = {
    ["1:web"]     = { position = 1, screen = 2, exclusive = true, init = true, nopopup = true,
 		     run = function () run_once(browser) end },
    ["2:dev"]     = { position = 2, exclusive = true, spawn = terminal },
-   ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "gajim", mwfact = 0.8, layout = awful.layout.suit.tile.right},
+   ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "gajim"},
    ["4:doc"]     = { position = 4, exclusive = true },
    ["5:java"]    = { position = 5, exclusive = true },
    ["d:own"]     = { position = 6, exclusive = true },
