@@ -213,6 +213,7 @@ local myawesomemenu = {
    { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/awesome.lua" },
    { "powersafe off", "xset s off" },
    { "xrandr", "xrandr --auto" },
+   { "arandr", "arandr" },
    { "restart", awesome.restart },
    { "quit", awesome.quit }
 }
