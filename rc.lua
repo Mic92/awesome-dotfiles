@@ -864,12 +864,6 @@ client.add_signal("manage", function (c, startup)
   -- Add a titlebar
   -- awful.titlebar.add(c, { modkey = modkey })
 
-  -- Pidgins Buddy List is always urgent on startup
-  if c.role == "roster" and c.name:find("Gajim") then
-    awful.client.urgent.delete(c)
-    awful.client.setslave(c)
-  end
-
   -- Enable sloppy focus
   c:add_signal("mouse::enter", function(c)
     if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
