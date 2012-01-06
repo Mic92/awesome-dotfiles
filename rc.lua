@@ -754,7 +754,7 @@ local globalkeys = awful.util.table.join(
   -- Screenshot open it with Eye of Gnome, copy it to dropbox and put the
   -- public link into the X-clipboard
   awful.key({ }, "Print", function ()
-    awful.util.spawn("scrot -e 'eog $f; mv $f Dropbox/Public;dropbox puburl Dropbox/Public/$f | xclip'")
+    awful.util.spawn("scrot -e 'eog $f; mv $f Dropbox/Public;dropbox puburl Dropbox/Public/$f | xclip -selection clipboard'")
   end),
 
   -- Volume keyboard control
