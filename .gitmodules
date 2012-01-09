@@ -7,3 +7,6 @@
 [submodule "shifty"]
 	path = shifty
 	url = git://github.com/bioe007/awesome-shifty.git
+[submodule "menubar"]
+	path = menubar
+	url = https://github.com/alexander-yakushev/menubar

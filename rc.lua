@@ -29,6 +29,10 @@ require("lfs")
 require("markup")
 -- MPD library
 require("mpd"); mpc = mpd.new()
+-- Menubar
+require("menubar")
+menubar.cache_entries = true
+menubar.app_folders = { "/usr/share/applications/" }
 -- }}}
 
 -- {{{ Error handling
@@ -769,7 +773,8 @@ local globalkeys = awful.util.table.join(
 
   -- Prompt
   --awful.key({ modkey }, "r",     function () mypromptbox[mouse.screen]:run() end),
-  awful.key({ modkey }, "r",     function () awful.util.spawn("gmrun") end),
+  awful.key({ modkey }, "r", function () awful.util.spawn("gmrun") end),
+  awful.key({ modkey }, "s", function () menubar.show() end),
 
   awful.key({ modkey }, "x",
   function ()
