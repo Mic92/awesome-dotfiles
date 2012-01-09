@@ -154,7 +154,7 @@ shifty.config.tags = {
    ["p:cfm"]     = { position = 7, exclusive = true, spawn = "pcmanfm" },
    ["e:macs"]    = { position = 8, exclusive = true, spawn = "emacs" },
    ["a:rio"]     = { position = 9, exclusive = true, spawn = "sonata" },
-   ["s:mplayer"] = { position = 10,exclusive = true, spawn = "smplayer" },
+   ["v:ideo"]    = { position = 10,exclusive = true },
    ["t:hunar"]   = { position = 11,exclusive = true, spawn = "thunar" },
    ["w:ine"]     = { position = 12,exclusive = true},
    ["g:imp"]     = { position = 13,exclusive = true, spawn = "gimp-2.7" },
@@ -172,7 +172,7 @@ shifty.config.apps = {
   { match = { "evince", "gvim", "keepassx", "libreoffice" },tag = "4:doc" },
   { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
   { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
-  { match = { "*mplayer*", "MPlayer" },                     tag = "s:mplayer" },
+  { match = { "*mplayer*", "MPlayer" },                     tag = "v:ideo" },
   { match = { "thunar"},                                    tag = "t:hunar" },
   { match = { "gimp" },                                     tag = "g:imp" },
   { match = { "pcmanfm", "dolphin", "nautilus" },           tag = "p:cfm", slave = true, nopopup = true, no_urgent = true},
@@ -819,7 +819,7 @@ local keystore = {
    "p",  --> pcmanfm
    "e",  --> emacs
    "a",  --> ario
-   "s",  --> smplayer
+   "v",  --> video
    "t",  --> thunar
    "w",  --> wine
    "g",  --> gimp
