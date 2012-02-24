@@ -33,6 +33,8 @@ require("mpd"); mpc = mpd.new()
 require("menubar")
 menubar.cache_entries = true
 menubar.app_folders = { "/usr/share/applications/" }
+-- scan for wlan networks using iwlist
+require("iwlist")
 -- }}}
 
 -- {{{ Error handling
@@ -547,7 +549,25 @@ vicious.register(wifiwidget, vicious.widgets.wifi, function(widget, args)
   return ("%s: %.1f%%"):format(args["{ssid}"], quality)
 end, 7, "wlan0")
 wifiicon:buttons( wifiwidget:buttons(awful.util.table.join(
-awful.button({ }, 1, function ()  awful.util.spawn("wicd-gtk")end), -- left click
+awful.button({}, 1, function()
+  local networks = iwlist.scan_networks()
+  if #networks > 0 then
+    local msg = {}
+    for i, ap in ipairs(networks) do
+      local line = "<b>ESSID:</b> %s <b>MAC:</b> %s <b>Qual.:</b> %.2f%% <b>%s</b>"
+      local enc = iwlist.get_encryption(ap)
+      msg[i] = line:format(ap.essid, ap.address, ap.quality, enc)
+    end
+    naughty.notify({text = table.concat(msg, "\n")})
+  else
+  end
+end),
+awful.button({ "Shift" }, 1, function ()
+  -- restart-auto-wireless is just a script of mine,
+  -- which just restart netcfg
+  local wpa_cmd = "sudo restart-auto-wireless && notify-send 'wpa_actiond' 'restarted' || notify-send 'wpa_actiond' 'error on restart'"
+  awful.util.spawn_with_shell(wpa_cmd)
+end), -- left click
 awful.button({ }, 3, function ()  vicious.force{wifiwidget} end) -- right click
 )))
 --}}}
