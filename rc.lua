@@ -155,7 +155,6 @@ shifty.config.tags = {
    ["e:macs"]    = { position = 8, exclusive = true, spawn = "emacs" },
    ["a:rio"]     = { position = 9, exclusive = true, spawn = "sonata" },
    ["v:ideo"]    = { position = 10,exclusive = true },
-   ["t:hunar"]   = { position = 11,exclusive = true, spawn = "thunar" },
    ["w:ine"]     = { position = 12,exclusive = true},
    ["g:imp"]     = { position = 13,exclusive = true, spawn = "gimp-2.7" },
    ["brasero"]   = { position = 14,exclusive = true},
@@ -173,9 +172,9 @@ shifty.config.apps = {
   { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
   { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
   { match = { "*mplayer*", "MPlayer" },                     tag = "v:ideo" },
-  { match = { "thunar"},                                    tag = "t:hunar" },
   { match = { "gimp" },                                     tag = "g:imp" },
-  { match = { "pcmanfm", "dolphin", "nautilus" },           tag = "p:cfm", slave = true, nopopup = true, no_urgent = true},
+  { match = { "pcmanfm", "dolphin", "nautilus", "thunar" }, tag = "p:cfm",
+    nopopup = true, no_urgent = true },
   { match = { "emacs" },                                    tag = "e:macs"},
   { match = { "Wine" },                                     tag = "w:ine" },
   -- For android only ;)
@@ -820,7 +819,6 @@ local keystore = {
    "e",  --> emacs
    "a",  --> ario
    "v",  --> video
-   "t",  --> thunar
    "w",  --> wine
    "g",  --> gimp
 }
