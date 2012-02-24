@@ -428,7 +428,7 @@ function (widget, args)
    return string.format("%skb/%skb", up, down)
 end, 5)
 -- Register buttons
-netwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e sudo nethogs -d 2") end) )
+netwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e sudo nethogs -d 2 -p wlan0") end) )
 neticon:buttons( netwidget:buttons() )
 -- }}}
 
