@@ -18,6 +18,8 @@ I make use of the following modules:
 
 * lfs (only for my run once function)
 
+* iwlist
+
 
 Here is a screenshot:
 ![screen shot](https://raw.github.com/Mic92/awesome-dotfiles/master/screenshot.png)
