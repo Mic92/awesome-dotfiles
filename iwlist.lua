@@ -39,6 +39,40 @@ If something is missing just send me a pull request or a mail
 local io = { popen = io.popen }
 module("iwlist")
 
+local function parse_line(line, ap)
+    local res, res2
+    res = line:match('^%s+ESSID:"([^"]+)"')
+    if res then
+      ap.essid = res
+      return
+    end
+    res, res2 = line:match('^%s+Quality=(%d+)/(%d+)')
+    if res then
+      ap.quality = (res / res2) * 100
+      return
+    end
+    res = line:match("^%s+Channel:(%d+)")
+    if res then
+      ap.chan = res
+      return
+    end
+    res = line:match("^%s+Encryption key:on")
+    if res then
+      ap.encryption = true
+      return
+    end
+    res = line:find("WPA Version 1")
+    if res then
+      ap.wpa = true
+      return
+    end
+    res = line:find("WPA2 Version 1")
+    if res then
+      ap.wpa2 = true
+      return
+    end
+end
+
 function scan_networks(device)
     local device = device or "wlan0"
     local f = io.popen("iwlist '"..device.."' scan")
@@ -82,36 +116,3 @@ function get_encryption(ap)
   end
 end
 
-local function parse_line(line, ap)
-    local res, res2
-    res = line:match('^%s+ESSID:"([^"]+)"')
-    if res then
-      ap.essid = res
-      return
-    end
-    res, res2 = line:match('^%s+Quality=(%d+)/(%d+)')
-    if res then
-      ap.quality = (res / res2) * 100
-      return
-    end
-    res = line:match("^%s+Channel:(%d+)")
-    if res then
-      ap.chan = res
-      return
-    end
-    res = line:match("^%s+Encryption key:on")
-    if res then
-      ap.encryption = true
-      return
-    end
-    res = line:find("WPA Version 1")
-    if res then
-      ap.wpa = true
-      return
-    end
-    res = line:find("WPA2 Version 1")
-    if res then
-      ap.wpa2 = true
-      return
-    end
-end
