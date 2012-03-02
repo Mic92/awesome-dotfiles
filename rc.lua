@@ -65,7 +65,8 @@ end
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
 --beautiful.init("/usr/share/awesome/themes/default/theme.lua")
-beautiful.init(awful.util.getdir("config").."/theme/theme.lua")
+--beautiful.init("/usr/share/awesome/themes/sky/theme.lua")
+beautiful.init(awful.util.getdir("config").."/awesome-themes/foobar/theme.lua")
 --beautiful.init("/usr/share/awesome/themes/zenburn/theme.lua")
 
 -- Use normal colors instead of focus colors for tooltips
@@ -107,36 +108,37 @@ local layouts =
 
 -- {{{ Run programm once - the fast way
 local function processwalker()
-   local function yieldprocess()
-      for dir in lfs.dir("/proc") do
-	-- All directories in /proc containing a number, represent a process
-	if tonumber(dir) ~= nil then
-	  local f, err = io.open("/proc/"..dir.."/cmdline")
-	  if f then
-	    local cmdline = f:read("*all")
-	    f:close()
-	    if cmdline ~= "" then
-	      coroutine.yield(cmdline)
-	    end
-	  end
-	end
+  local function yieldprocess()
+    for dir in lfs.dir("/proc") do
+      -- All directories in /proc containing a number, represent a process
+      if tonumber(dir) ~= nil then
+        local f, err = io.open("/proc/"..dir.."/cmdline")
+        if f then
+          local cmdline = f:read("*all")
+          f:close()
+          if cmdline ~= "" then
+            coroutine.yield(cmdline)
+          end
+        end
       end
     end
-    return coroutine.wrap(yieldprocess)
+  end
+  return coroutine.wrap(yieldprocess)
 end
 
 local function run_once(process, cmd)
-   assert(type(process) == "string")
-   local escaped_chars = {
-      ["+"]  = "%+", ["-"] = "%-",
-      ["*"]  = "%*", ["?"]  = "%?" }
+  assert(type(process) == "string")
+  local escaped_chars = {
+    ["+"]  = "%+", ["-"] = "%-",
+    ["*"]  = "%*", ["?"]  = "%?"
+  }
 
-   for p in processwalker() do
-      if p:find(process:gsub("[-+?*]", escaped_chars)) then
-	 return
-      end
-   end
-   return awful.util.spawn(cmd or process)
+  for p in processwalker() do
+    if p:find(process:gsub("[-+?*]", escaped_chars)) then
+      return
+    end
+  end
+  return awful.util.spawn(cmd or process)
 end
 -- }}}
 
@@ -156,7 +158,8 @@ shifty.config.tags = {
    ["p:cfm"]     = { position = 7, exclusive = true, spawn = "pcmanfm" },
    ["e:macs"]    = { position = 8, exclusive = true, spawn = "emacs" },
    ["a:rio"]     = { position = 9, exclusive = true, spawn = "sonata" },
-   ["v:ideo"]    = { position = 10,exclusive = true },
+   ["i:da"]      = { position = 10, exclusive = true },
+   ["v:ideo"]    = { position = 11,exclusive = true },
    ["w:ine"]     = { position = 12,exclusive = true},
    ["g:imp"]     = { position = 13,exclusive = true, spawn = "gimp-2.7" },
    ["brasero"]   = { position = 14,exclusive = true},
@@ -167,12 +170,14 @@ shifty.config.tags = {
 shifty.config.apps = {
   { match = { "Firefox", "Opera", "chromium", "Aurora",
   "Developer Tools" },                                      tag = "1:web" },
-  { match = { "xterm", "urxvt" },                           tag = "2:dev", slave = true, honorsizehints = false },
+  { match = { "xterm", "urxvt" },                           tag = "2:dev",
+                                                            honorsizehints = false, opacity = 0.7 },
   { match = { "buddy_list" },                               no_urgent = true},
   { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
   { match = { "evince", "gvim", "keepassx", "libreoffice" },tag = "4:doc" },
   { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
   { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
+  { match = { "Idaq" },                                     tag = "i:da" },
   { match = { "*mplayer*", "MPlayer" },                     tag = "v:ideo" },
   { match = { "gimp" },                                     tag = "g:imp" },
   { match = { "pcmanfm", "dolphin", "nautilus", "thunar" }, tag = "p:cfm",
@@ -475,43 +480,43 @@ pkgicon:buttons( pkgwidget:buttons() )
 --}}}
 
 -- {{{ News: Display new podcasts
-local newswidget = widget({ type = "textbox" })
-local newsicon = widget({ type = "imagebox" }); newsicon.image = image(icon_path.."feed.png")
--- don't show icon by default
-newsicon.visible = false
-local lib = os.getenv("HOME").."/music/podcasts/"
-vicious.register(newswidget, vicious.contrib.countfiles,
-function(widget, args)
-   local text = ""
-   for key, value in pairs(args) do
-      if value > 0 then
-	 if value == 1 then
-	    text = text..key.." "
-	 else
-	    text = text..string.format("%s: %d ", key, value)
-	 end
-      end
-   end
-   -- toggle icon
-   newsicon.visible = (text ~= "")
-   return text
-end, 181,
-{ pattern = ".*.(mp[34]|ogg|m4a)$",
-  paths = { Tagess = lib.."Tagesschau",
-	    mobileMacs = lib.."mobileMacs",
-	    RadioTux = lib.."RadioTux Talk",
-	    RadioTux = lib.."RadioTux Binärgewitter",
-	    Spasspkt = lib.."WDR 2 Zugabe Spaßpaket",
-	    NFSW = lib.."Not Safe For Work",
-	    Alternativlos = lib.."Alternativlos"}})
-
--- Register Buttons in all widget
-newswidget:buttons(
-   awful.util.table.join(
-      awful.button({ }, 1, -- left click -> open podcast client
-		   function () awful.util.spawn("gpodder") end),
-      awful.button({ }, 3, function () vicious.force({newswidget}) end) -- right click -> update
-))
+--local newswidget = widget({ type = "textbox" })
+--local newsicon = widget({ type = "imagebox" }); newsicon.image = image(icon_path.."feed.png")
+---- don't show icon by default
+--newsicon.visible = false
+--local lib = os.getenv("HOME").."/music/podcasts/"
+--vicious.register(newswidget, vicious.contrib.countfiles,
+--function(widget, args)
+--   local text = ""
+--   for key, value in pairs(args) do
+--      if value > 0 then
+--	 if value == 1 then
+--	    text = text..key.." "
+--	 else
+--	    text = text..string.format("%s: %d ", key, value)
+--	 end
+--      end
+--   end
+--   -- toggle icon
+--   newsicon.visible = (text ~= "")
+--   return text
+--end, 181,
+--{ pattern = ".*.(mp[34]|ogg|m4a)$",
+--  paths = { Tagess = lib.."Tagesschau",
+--	    mobileMacs = lib.."mobileMacs",
+--	    RadioTux = lib.."RadioTux Talk",
+--	    RadioTux = lib.."RadioTux Binärgewitter",
+--	    Spasspkt = lib.."WDR 2 Zugabe Spaßpaket",
+--	    NFSW = lib.."Not Safe For Work",
+--	    Alternativlos = lib.."Alternativlos"}})
+--
+---- Register Buttons in all widget
+--newswidget:buttons(
+--   awful.util.table.join(
+--      awful.button({ }, 1, -- left click -> open podcast client
+--		   function () awful.util.spawn("gpodder") end),
+--      awful.button({ }, 3, function () vicious.force({newswidget}) end) -- right click -> update
+--))
 -- }}}
 
 -- {{{ MPD
@@ -533,7 +538,7 @@ awful.button({ }, 5, function () mpc:seek(-5) mpc:update()           end)  -- sc
 -- }}}
 
 --{{{ Wifi
-local wifiwidget = widget({ type = "textbox"})
+local wifiwidget = widget({ type = "textbox" })
 local wifiicon   = widget({ type = "imagebox" })
 local wifitooltip= awful.tooltip({})
 wifitooltip:add_to_object(wifiwidget)
@@ -681,7 +686,7 @@ for s = 1, screen.count() do
     {
       pkgwidget, pkgicon,
       wimpc, mpcicon,
-      newswidget, newsicon,
+--      newswidget, newsicon,
       layout = awful.widget.layout.horizontal.rightleft,
     },
     layout = awful.widget.layout.horizontal.leftright,
@@ -839,6 +844,7 @@ local keystore = {
    "p",  --> pcmanfm
    "e",  --> emacs
    "a",  --> ario
+   "i",  --> ida
    "v",  --> video
    "w",  --> wine
    "g",  --> gimp
