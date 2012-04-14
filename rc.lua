@@ -21,20 +21,23 @@ require("naughty")
 require("shifty")
 -- widget library
 require("vicious")
-require("cal")
 require("lognotify")
 -- required for run once
 require("lfs")
--- little helper
-require("markup")
--- MPD library
-require("mpd"); mpc = mpd.new()
+require("utils")
+-- calendar widget
+local cal    = utils.cal
+-- wrapper for pango markup
+local markup = utils.markup
+-- scan for wlan accesspoints using iwlist
+local iwlist = utils.iwlist
+-- MPD widget based on mpd.lua
+local wimpd  = utils.wimpd
+local mpc = wimpd.new()
 -- Menubar
 require("menubar")
 menubar.cache_entries = true
 menubar.app_folders = { "/usr/share/applications/" }
--- scan for wlan networks using iwlist
-require("iwlist")
 -- }}}
 
 -- {{{ Error handling
@@ -520,8 +523,6 @@ pkgicon:buttons( pkgwidget:buttons() )
 -- }}}
 
 -- {{{ MPD
-require("mpc")
-local mpc = mpc()
 local wimpc = widget({ type = "textbox" })
 local mpcicon = widget({ type = "imagebox" })
 mpcicon.image = image(icon_path.."music.png")

@@ -13,3 +13,6 @@
 [submodule "awesome-themes"]
 	path = awesome-themes
 	url = https://github.com/mikar/awesome-themes.git
+[submodule "utils"]
+	path = utils
+	url = git://github.com/Mic92/utils.git
