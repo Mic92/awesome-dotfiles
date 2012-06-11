@@ -787,6 +787,12 @@ local globalkeys = awful.util.table.join(
     awful.util.spawn("scrot -e 'eog $f; mv $f Dropbox/Public;dropbox puburl Dropbox/Public/$f | xclip -selection clipboard'")
   end),
 
+  awful.key({ }, "XF86Display", function()
+    -- switch between external and internal display
+    -- source: https://wiki.archlinux.org/index.php/Xrandr#Scripts
+    awful.util.spawn("display-toggle.sh")
+  end),
+
   -- Volume keyboard control
   awful.key({ }, "XF86AudioRaiseVolume", function () pulse_volume(5) end),
   awful.key({ }, "XF86AudioLowerVolume", function () pulse_volume(-5)end),
