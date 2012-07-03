@@ -20,7 +20,8 @@ require("naughty")
 -- dynamic tagging library
 require("shifty")
 -- widget library
-require("vicious")
+vicious = require("vicious")
+vicious.contrib = require("vicious.contrib")
 require("lognotify")
 -- required for run once
 require("lfs")
