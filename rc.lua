@@ -173,7 +173,7 @@ shifty.config.tags = {
 -- order here matters, early rules will be applied first
 shifty.config.apps = {
   { match = { "Firefox", "Opera", "chromium", "Aurora",
-  "Developer Tools" },                                      tag = "1:web" },
+  "Developer Tools", "Mail" },                              tag = "1:web" },
   { match = { "xterm", "urxvt" },                           tag = "2:dev",
                                                             honorsizehints = false, opacity = 0.7 },
   { match = { "buddy_list" },                               no_urgent = true},
@@ -182,7 +182,7 @@ shifty.config.apps = {
   { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
   { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
   { match = { "Idaq" },                                     tag = "i:da" },
-  { match = { "*mplayer*", "MPlayer" },                     tag = "v:ideo" },
+  { match = { "*mplayer*", "MPlayer", "vlc" },              tag = "v:ideo" },
   { match = { "gimp" },                                     tag = "g:imp" },
   { match = { "pcmanfm", "dolphin", "nautilus", "thunar" }, tag = "p:cfm",
     nopopup = true, no_urgent = true },
