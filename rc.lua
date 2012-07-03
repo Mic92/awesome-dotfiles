@@ -1,6 +1,6 @@
 --[[
 awesome.lua - main config of my window manager
- awesome v3.4.11 (Pickapart)
+awesome v3.4.12 (Starlight)
 os: archlinux x86_64
 cpu: Intel(R) Core(TM) i3-2310M CPU @ 2.10GHz
 grapic:  Intel Graphics 3000
@@ -780,8 +780,8 @@ local globalkeys = awful.util.table.join(
   -- Easy way to share Screenshots over dropbox: The following code make a
   -- Screenshot open it with Eye of Gnome, copy it to dropbox and put the
   -- public link into the X-clipboard
-  awful.key({ }, "Print", function ()
-    awful.util.spawn("scrot -e 'eog $f; mv $f Dropbox/Public;dropbox puburl Dropbox/Public/$f | xclip -selection clipboard'")
+  awful.key({modkey }, "Print", function ()
+    awful.util.spawn("scrot --exec 'eog $f; mv $f Dropbox/Public;dropbox puburl Dropbox/Public/$f | xclip -selection clipboard'")
   end),
 
   awful.key({ }, "XF86Display", function()
@@ -803,7 +803,7 @@ local globalkeys = awful.util.table.join(
   -- Prompt
   --awful.key({ modkey }, "r",     function () mypromptbox[mouse.screen]:run() end),
   awful.key({ modkey }, "r", function () awful.util.spawn("gmrun") end),
-  awful.key({ modkey }, "s", function () menubar.show() end),
+--  awful.key({ modkey }, "s", function () menubar.show() end),
 
   awful.key({ modkey }, "x",
   function ()
