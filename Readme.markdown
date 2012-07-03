@@ -10,8 +10,6 @@ I make use of the following modules:
 
 * vicious
 
-* menubar
-
 * lognotify -> depends on inotify (read lognotifiy's Readme)
 
 * mpd -> depends on luasocket

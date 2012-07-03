@@ -35,10 +35,6 @@ local iwlist = utils.iwlist
 -- MPD widget based on mpd.lua
 local wimpd  = utils.wimpd
 local mpc = wimpd.new()
--- Menubar
-require("menubar")
-menubar.cache_entries = true
-menubar.app_folders = { "/usr/share/applications/" }
 -- }}}
 
 -- {{{ Error handling
