@@ -2,7 +2,9 @@ awesome config
 ==============
 
 Here is my personal configuration of awesome.
-I make use of the following modules:
+Currently I use awesome v3.4.12 (Starlight)
+
+with the following modules:
 
 * cal
 
