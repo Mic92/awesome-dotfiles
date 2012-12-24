@@ -10,30 +10,27 @@ screen: [1] 1366x768
 -- {{{ Awesome Library
 print("[awesome] Entered awesome.lua: "..os.date())
 
-require("awful")
-require("awful.autofocus")
+local awful = require("awful")
+awful.autofocus = require("awful.autofocus")
 --require("awful.rules")
 -- Theme handling library
-require("beautiful")
+local beautiful = require("beautiful")
 -- Notification library
-require("naughty")
+local naughty = require("naughty")
 -- dynamic tagging library
-require("shifty")
+local shifty = require("shifty")
 -- widget library
-vicious = require("vicious")
+local vicious = require("vicious")
 vicious.contrib = require("vicious.contrib")
-require("lognotify")
--- required for run once
-require("lfs")
-require("utils")
+local lognotify = require("lognotify")
 -- calendar widget
-local cal    = utils.cal
+local cal    = require("utils.cal")
 -- wrapper for pango markup
-local markup = utils.markup
+local markup = require("utils.markup")
 -- scan for wlan accesspoints using iwlist
-local iwlist = utils.iwlist
+local iwlist = require("utils.iwlist")
 -- MPD widget based on mpd.lua
-local wimpd  = utils.wimpd
+local wimpd  = require("utils.wimpd")
 local mpc = wimpd.new()
 -- }}}
 
@@ -64,10 +61,11 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
---beautiful.init("/usr/share/awesome/themes/default/theme.lua")
---beautiful.init("/usr/share/awesome/themes/sky/theme.lua")
-beautiful.init(awful.util.getdir("config").."/awesome-themes/foobar/theme.lua")
---beautiful.init("/usr/share/awesome/themes/zenburn/theme.lua")
+--local theme_path = "/usr/share/awesome/themes/default/theme.lua"
+--local theme_path = "/usr/share/awesome/themes/sky/theme.lua"
+local theme_path = awful.util.getdir("config").."/awesome-themes/foobar/theme.lua"
+
+beautiful.init(theme_path)
 
 -- Use normal colors instead of focus colors for tooltips
 beautiful.tooltip_bg_color = beautiful.bg_normal
@@ -77,6 +75,7 @@ beautiful.tooltip_fg_color = beautiful.fg_normal
 local terminal   = os.getenv("TERMINAL") or "xterm"
 local editor     = os.getenv("EDITOR") or "nano"
 local browser    = os.getenv("BROWSER") or "firefox"
+local mail       = "thunderbird"
 local editor_cmd = terminal.." -e "..editor
 
 -- Default modkey.
@@ -106,41 +105,8 @@ local layouts =
 }
 -- }}}
 
--- {{{ Run programm once - the fast way
-local function processwalker()
-  local function yieldprocess()
-    for dir in lfs.dir("/proc") do
-      -- All directories in /proc containing a number, represent a process
-      if tonumber(dir) ~= nil then
-        local f, err = io.open("/proc/"..dir.."/cmdline")
-        if f then
-          local cmdline = f:read("*all")
-          f:close()
-          if cmdline ~= "" then
-            coroutine.yield(cmdline)
-          end
-        end
-      end
-    end
-  end
-  return coroutine.wrap(yieldprocess)
-end
-
-local function run_once(process, cmd)
-  assert(type(process) == "string")
-  local escaped_chars = {
-    ["+"]  = "%+", ["-"] = "%-",
-    ["*"]  = "%*", ["?"]  = "%?"
-  }
-
-  for p in processwalker() do
-    if p:find(process:gsub("[-+?*]", escaped_chars)) then
-      return
-    end
-  end
-  return awful.util.spawn(cmd or process)
-end
--- }}}
+-- Define if we want to use titlebar on all applications.
+local use_titlebar = false
 
 -- {{{ Shifty configuration
 -- tag settings
@@ -149,9 +115,10 @@ end
 
 shifty.config.tags = {
    ["1:web"]     = { position = 1, screen = 2, exclusive = true, init = true, nopopup = true,
-		     run = function () run_once(browser) end },
+                     spawn = "systemctl --user start app@firefox.service" },
    ["2:dev"]     = { position = 2, exclusive = true, spawn = terminal },
-   ["3:im"]      = { position = 3, exclusive = true, nopopup = true, spawn = "gajim"},
+   ["3:im"]      = { position = 3, exclusive = true, nopopup = true,
+                     spawn = "systemctl --user start app@gajim.service"},
    ["4:doc"]     = { position = 4, exclusive = true },
    ["5:java"]    = { position = 5, exclusive = true },
    ["d:own"]     = { position = 6, exclusive = true },
@@ -169,9 +136,9 @@ shifty.config.tags = {
 -- order here matters, early rules will be applied first
 shifty.config.apps = {
   { match = { "Firefox", "Opera", "chromium", "Aurora",
-  "Developer Tools", "Mail" },                              tag = "1:web" },
-  { match = { "xterm", "urxvt" },                           tag = "2:dev",
-                                                            honorsizehints = false, opacity = 0.7 },
+  "Developer Tools", "Mail", "Thunderbird" },               tag = "1:web" },
+  { match = { "xterm", "urxvt" },                           tag = "2:dev", opacity = 0.6,
+                                                            honorsizehints = false},
   { match = { "buddy_list" },                               no_urgent = true},
   { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
   { match = { "evince", "gvim", "keepassx", "libreoffice" },tag = "4:doc" },
@@ -184,24 +151,32 @@ shifty.config.apps = {
     nopopup = true, no_urgent = true },
   { match = { "emacs" },                                    tag = "e:macs"},
   { match = { "Wine" },                                     tag = "w:ine" },
+  { match = { "hamster" },                                  tag = "hamster" },
   -- For android only ;)
-  { match = { "Eclipse", "NetBeans IDE" },                  tag = "5:java" },
+  { match = { "Eclipse", "NetBeans IDE", "jetbrains" },     tag = "5:java" },
   { match = { "gmrun", "qalculate", "gcalctool", "Komprimieren","Wicd*" },
     intrusive = true, ontop = true, above = true, dockable = true },
   -- buttons to resize/move clients
-  { match = { "" }, buttons = awful.util.table.join(
-    awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
-    awful.button({ modkey }, 1, function (c)
-      client.focus = c
-      c:raise()
-      awful.mouse.client.move(c)
-    end),
-    awful.button({ modkey }, 3, awful.mouse.client.resize )),
-    size_hints_honor = false
+  { match = { "" },
+    buttons = awful.util.table.join(
+      awful.button({}, 1, function (c) client.focus = c; c:raise() end),
+      awful.button({modkey}, 1, function (c)
+        client.focus = c
+        c:raise()
+        awful.mouse.client.move(c)
+      end),
+      awful.button({modkey}, 3, awful.mouse.client.resize )),
   }
 }
 
--- tag defaults
+-- SHIFTY: default tag creation rules
+-- parameter description
+--  * floatBars : if floating clients should always have a titlebar
+--  * guess_name : should shifty try and guess tag names when creating
+--                 new (unconfigured) tags?
+--  * guess_position: as above, but for position parameter
+--  * run : function to exec when shifty creates a new tag
+--  * all other parameters (e.g. layout, mwfact) follow awesome's tag API
 shifty.config.defaults = {
    layout = awful.layout.suit.tile.left,
    ncol = 1,
@@ -209,11 +184,7 @@ shifty.config.defaults = {
    floatBars      = true,
    guess_name     = true,
    guess_position = true,
-   dockable       = true,
 }
-
-shifty.modkey = modkey
-shifty.config.sloppy = true
 -- }}}
 
 -- {{{ Menu
@@ -275,6 +246,12 @@ ilog = lognotify{
 }
 ilog:start()
 -- }}}
+
+-- Transparent notifications
+naughty.config.presets.normal.opacity = 0.8
+naughty.config.presets.low.opacity = 0.8
+naughty.config.presets.critical.opacity = 0.8
+
 
 -- {{{ Vicious and MPD
 print("[awesome] initialize vicious")
@@ -578,7 +555,7 @@ awful.button({ }, 3, function ()  vicious.force{wifiwidget} end) -- right click
 
 -- {{{ Wibox
 -- Create a systray
-local mysystray = widget({ type = "systray" })
+local mysystray = widget({ type = "systray", align = "right" })
 
 -- Create a wibox for each screen and add it
 local mywibox = {}
@@ -587,13 +564,13 @@ local mypromptbox = {}
 local mylayoutbox = {}
 local mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
-   awful.button({ }, 1, awful.tag.viewonly),
-   awful.button({ modkey }, 1, awful.client.movetotag),
-   awful.button({ }, 3, awful.tag.viewtoggle),
-   awful.button({ modkey }, 3, awful.client.toggletag),
-   awful.button({ }, 4, awful.tag.viewnext),
-   awful.button({ }, 5, awful.tag.viewprev)
-)
+    awful.button({}, 1, awful.tag.viewonly),
+    awful.button({modkey}, 1, awful.client.movetotag),
+    awful.button({}, 3, function(tag) tag.selected = not tag.selected end),
+    awful.button({modkey}, 3, awful.client.toggletag),
+    awful.button({}, 4, awful.tag.viewnext),
+    awful.button({}, 5, awful.tag.viewprev)
+    )
 local mytasklist = {}
 mytasklist.buttons = awful.util.table.join(
    awful.button({ }, 1,
@@ -696,7 +673,7 @@ end
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
-		awful.button({ }, 3, function () mymainmenu:toggle() end),
+		awful.button({ }, 3, function () mymainmenu:show({keygrabber=true}) end),
 		awful.button({ }, 4, awful.tag.viewnext),
 		awful.button({ }, 5, awful.tag.viewprev)
 ))
@@ -885,44 +862,24 @@ end
 
 -- Set keys
 root.keys(globalkeys)
-shifty.config.globalkey = globalkeys
 shifty.config.clientkeys = clientkeys
+shifty.config.modkey = modkey
 
 shifty.taglist = mytaglist
 shifty.init()
 -- }}}
 
 -- {{{ Signals
--- Signal function to execute when a new client appears.
-client.add_signal("manage", function (c, startup)
-  -- Add a titlebar
-  -- awful.titlebar.add(c, { modkey = modkey })
-
-  -- Enable sloppy focus
-  c:add_signal("mouse::enter", function(c)
-    if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-      and awful.client.focus.filter(c) then
-      client.focus = c
-    end
-  end)
-
-  -- usefull for debugging
-
-  if not startup then
-     -- Set the windows at the slave,
-     -- i.e. put it at the end of others instead of setting it master.
-     --awful.client.setslave(c)
-
-     -- Put windows in a smart way, only if they does not set an initial position.
-     if not c.size_hints.user_position and not c.size_hints.program_position then
-       awful.placement.no_overlap(c)
-       awful.placement.no_offscreen(c)
-     end
+client.add_signal("focus", function(c)
+  if not awful.client.ismarked(c) then
+    c.border_color = beautiful.border_focus
   end
 end)
-
-client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.add_signal("unfocus", function(c)
+  if not awful.client.ismarked(c) then
+    c.border_color = beautiful.border_normal
+  end
+end)
 -- }}}
 
 -- {{{ Timer
