@@ -6,7 +6,9 @@ Currently I use awesome v3.5 (Last Christmas)
 
 with the following modules:
 
-* (shifty) - currently broken in the latest awesome release
+* shifty:
+    - use [cdump's branch](https://github.com/cdump/awesome-shifty),
+    - requires a patch to work with awesome v3.5
 
 * vicious
 
