@@ -25,4 +25,4 @@ awesome with luajit ([awesome-luajit-git]() in AUR, if you are on archlinux)
 
 
 Here is a screenshot:
-![screen shot](https://raw.github.com/Mic92/awesome-dotfiles/master/screenshot.png)
+![screen shot](https://github.com/downloads/Mic92/awesome-dotfiles/screenshot.png)
