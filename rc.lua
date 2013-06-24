@@ -13,6 +13,7 @@ print("[awesome] Entered awesome.lua: "..os.date())
 -- Standard awesome library
 local gears = require("gears")
 local awful = require("awful")
+awful.rules = require("awful.rules")
 require("awful.autofocus")
 -- Widget and layout library
 local wibox = require("wibox")
@@ -22,7 +23,8 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local menubar = require("menubar")
 -- dynamic tagging library
-local shifty = require("shifty")
+--local shifty = require("shifty")
+local tyrannical = require("tyrannical")
 -- widget library
 local vicious = require("vicious")
 vicious.contrib = require("vicious.contrib")
@@ -76,6 +78,9 @@ beautiful.tooltip_bg_color = beautiful.bg_normal
 beautiful.tooltip_fg_color = beautiful.fg_normal
 
 -- This is used later as the default terminal and editor to run.
+local spawn_with_systemd = function(app)
+  return "systemctl --user start app@"..app..".service"
+end
 local terminal   = os.getenv("TERMINAL") or "xterm"
 local editor     = os.getenv("EDITOR") or "nano"
 local browser    = os.getenv("BROWSER") or "firefox"
@@ -122,61 +127,180 @@ end
 -- the exclusive in each definition seems to be overhead, but it prevent new on-the-fly tags to be exclusive
 -- the follow function make it easier to swap tags
 
-shifty.config.tags = {
-   ["1:web"]     = { position = 1, screen = 2, exclusive = true, init = true, nopopup = true,
-                     spawn = "systemctl --user start app@firefox.service" },
-   ["2:dev"]     = { position = 2, exclusive = true, spawn = terminal },
-   ["3:im"]      = { position = 3, exclusive = true, nopopup = true,
-                     spawn = "systemctl --user start app@gajim.service"},
-   ["4:doc"]     = { position = 4, exclusive = true },
-   ["5:java"]    = { position = 5, exclusive = true },
-   ["d:own"]     = { position = 6, exclusive = true },
-   ["p:cfm"]     = { position = 7, exclusive = true, spawn = "pcmanfm" },
-   ["e:macs"]    = { position = 8, exclusive = true, spawn = "emacs" },
-   ["a:rio"]     = { position = 9, exclusive = true, spawn = "sonata" },
-   ["i:da"]      = { position = 10, exclusive = true },
-   ["v:ideo"]    = { position = 11,exclusive = true },
-   ["w:ine"]     = { position = 12,exclusive = true},
-   ["g:imp"]     = { position = 13,exclusive = true, spawn = "gimp-2.7" },
-   ["brasero"]   = { position = 14,exclusive = true},
+tyrannical.tags = {
+  {
+    name = "1:web",
+    position = 1,
+    init = true,
+    exclusive = true,
+    screen = 1,
+    layout = awful.layout.suit.max,
+    exec_once = { spawn_with_systemd(browser) },
+    class = { "Firefox", "Opera", "Chromium", "Aurora",
+      "Thunderbird", "evolution" },
+  },
+  {
+    name = "2:dev",
+    position = 2,
+    exclusive = true,
+    init = true,
+    screen = 1,
+    layout = awful.layout.suit.tile,
+    exec_once = { spawn_with_systemd(terminal) },
+    class       = {
+      "xterm" , "urxvt" , "aterm", "URxvt", "XTerm"
+    },
+    match       = {
+      "konsole"
+    }
+  },
+  {
+    name = "3:im",
+    position = 3,
+    exclusive = true,
+    init = true,
+    layout = awful.layout.suit.tile,
+    exec_once = { spawn_with_systemd("gajim") },
+    class = { "Kopete", "Pidgin", "skype", "gajim" }
+  },
+  {
+    name = "4:doc",
+    position = 4,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.max,
+    class = { "Evince", "GVim", "keepassx", "libreoffice" }
+  },
+  {
+    name = "5:java",
+    position = 5,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.tile,
+    class = { "Eclipse", "NetBeans IDE", "jetbrains%-idea%-ce" }
+  },
+  {
+    name = "d:own",
+    position = 6,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.tile,
+    class = { "gpodder", "JDownloader", "Transmission" }
+  },
+  {
+    name = "s:tfm",
+    position = 7,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.tile,
+    exec_once = { spawn_with_systemd("stuurman") },
+    class = { "stuurman", "pcmanfm", "dolphin", "nautilus", "thunar" }
+  },
+  {
+    name = "e:macs",
+    position = 8,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.tile,
+    exec_once = { spawn_with_systemd("emacs") },
+    class = { "emacs" }
+  },
+  {
+    name = "a:rio",
+    position = 9,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.max,
+    class = { "sonata", "Goggles Music"},
+    match = { "ncmpcpp" }
+  },
+  {
+    name = "v:ideo",
+    position = 10,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.max                          ,
+    class = { "MPlayer", "VLC", "Smplayer" }
+  },
+  {
+    name = "w:ine",
+    position = 11,
+    exclusive = true,
+    init = false,
+    layout = awful.layout.suit.tile,
+    class = { "Wine" }
+  },
 }
+
+tyrannical.properties.intrusive = {
+  "gmrun", "qalculate", "gnome-calculator", "Komprimieren", "Wicd", "Valauncher"
+}
+
+tyrannical.properties.ontop = {
+  "gmrun", "qalculate", "gnome-calculator", "Komprimieren", "Wicd", "Valauncher", "MPlayer", "pinentry"
+}
+
+tyrannical.properties.floating = {
+  "MPlayer", "pinentry"
+}
+
+tyrannical.properties.size_hints_honor = {
+  xterm = false, URxvt = false, aterm = false
+}
+
+--shifty.config.tags = {
+--   ["1:web"]     = { position = 1, screen = 2, exclusive = true, init = true, nopopup = true,
+--                     spawn = spawn_with_systemd(browser) },
+--   ["2:dev"]     = { position = 2, exclusive = true, spawn = spawn_with_systemd(terminal) },
+--   ["3:im"]      = { position = 3, exclusive = true, nopopup = true,
+--                     spawn = spawn_with_systemd("pidgin")},
+--   ["4:doc"]     = { position = 4, exclusive = true },
+--   ["5:java"]    = { position = 5, exclusive = true },
+--   ["d:own"]     = { position = 6, exclusive = true },
+--   ["p:cfm"]     = { position = 7, exclusive = true, spawn = spawn_with_systemd("pcmanfm") },
+--   ["e:macs"]    = { position = 8, exclusive = true, spawn = spawn_with_systemd("emacs") },
+--   ["a:rio"]     = { position = 9, exclusive = true, spawn = spawn_with_systemd("sonata") },
+--   ["v:ideo"]    = { position = 11,exclusive = true },
+--   ["w:ine"]     = { position = 12,exclusive = true},
+--   ["g:imp"]     = { position = 13,exclusive = true, spawn = spawn_with_systemd("gimp") },
+--   ["brasero"]   = { position = 14,exclusive = true},
+--}
 
 -- client settings
 -- order here matters, early rules will be applied first
-shifty.config.apps = {
-  { match = { "Firefox", "Opera", "chromium", "Aurora",
-  "Developer Tools", "Mail", "Thunderbird" },               tag = "1:web" },
-  { match = { "xterm", "urxvt" },                           tag = "2:dev", opacity = 0.6,
-                                                            honorsizehints = false},
-  { match = { "buddy_list" },                               no_urgent = true},
-  { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
-  { match = { "evince", "gvim", "keepassx", "libreoffice" },tag = "4:doc" },
-  { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
-  { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
-  { match = { "Idaq" },                                     tag = "i:da" },
-  { match = { "*mplayer*", "MPlayer", "vlc" },              tag = "v:ideo" },
-  { match = { "gimp" },                                     tag = "g:imp" },
-  { match = { "pcmanfm", "dolphin", "nautilus", "thunar" }, tag = "p:cfm",
-    nopopup = true, no_urgent = true },
-  { match = { "emacs" },                                    tag = "e:macs"},
-  { match = { "Wine" },                                     tag = "w:ine" },
-  { match = { "hamster" },                                  tag = "hamster" },
-  -- For android only ;)
-  { match = { "Eclipse", "NetBeans IDE", "jetbrains" },     tag = "5:java" },
-  { match = { "gmrun", "qalculate", "gcalctool", "Komprimieren","Wicd*" },
-    intrusive = true, ontop = true, above = true, dockable = true },
-  -- buttons to resize/move clients
-  { match = { "" },
-    buttons = awful.util.table.join(
-      awful.button({}, 1, function (c) client.focus = c; c:raise() end),
-      awful.button({modkey}, 1, function (c)
-        client.focus = c
-        c:raise()
-        awful.mouse.client.move(c)
-      end),
-      awful.button({modkey}, 3, awful.mouse.client.resize )),
-  }
-}
+--shifty.config.apps = {
+--  { match = { "Firefox", "Opera", "chromium", "Aurora",
+--  "Developer Tools", "Mail", "Thunderbird" },               tag = "1:web" },
+--  { match = { "xterm", "urxvt" },                           tag = "2:dev", opacity = 0.4,
+--                                                            honorsizehints = false},
+--  { match = { "buddy_list" },                               no_urgent = true},
+--  { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
+--  { match = { "evince", "gvim", "keepassx", "libreoffice" },tag = "4:doc" },
+--  { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
+--  { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
+--  { match = { "*mplayer*", "MPlayer", "vlc" },              tag = "v:ideo" },
+--  { match = { "gimp" },                                     tag = "g:imp" },
+--  { match = { "pcmanfm", "dolphin", "nautilus", "thunar" }, tag = "p:cfm",
+--    nopopup = true, no_urgent = true },
+--  { match = { "emacs" },                                    tag = "e:macs"},
+--  { match = { "Wine" },                                     tag = "w:ine" },
+--  { match = { "hamster" },                                  tag = "hamster" },
+--  -- For android only ;)
+--  { match = { "Eclipse", "NetBeans IDE", "jetbrains" },     tag = "5:java" },
+--  { match = { "gmrun", "qalculate", "gcalctool", "Komprimieren","Wicd*" },
+--    intrusive = true, ontop = true, above = true, dockable = true },
+--  -- buttons to resize/move clients
+--  { match = { "" },
+--    buttons = awful.util.table.join(
+--      awful.button({}, 1, function (c) client.focus = c; c:raise() end),
+--      awful.button({modkey}, 1, function (c)
+--        client.focus = c
+--        c:raise()
+--        awful.mouse.client.move(c)
+--      end),
+--      awful.button({modkey}, 3, awful.mouse.client.resize )),
+--  }
+--}
 
 -- SHIFTY: default tag creation rules
 -- parameter description
@@ -186,14 +310,14 @@ shifty.config.apps = {
 --  * guess_position: as above, but for position parameter
 --  * run : function to exec when shifty creates a new tag
 --  * all other parameters (e.g. layout, mwfact) follow awesome's tag API
-shifty.config.defaults = {
-   layout = awful.layout.suit.tile.left,
-   ncol = 1,
-   mwfact = 0.60,
-   floatBars      = true,
-   guess_name     = true,
-   guess_position = true,
-}
+--shifty.config.defaults = {
+--   layout = awful.layout.suit.tile.left,
+--   ncol = 1,
+--   mwfact = 0.60,
+--   floatBars      = true,
+--   guess_name     = true,
+--   guess_position = true,
+--}
 -- }}}
 
 -- {{{ Menu
@@ -205,14 +329,13 @@ local myawesomemenu = {
    { "xrandr", "xrandr --auto" },
    { "arandr", "arandr" },
    { "restart", awesome.restart },
-   { "quit", awesome.quit }
+   { "quit",  "systemctl --user exit" }
 }
 
 local mymainmenu = awful.menu({ items = {
   { "awesome", myawesomemenu, beautiful.awesome_icon },
   { "open terminal", terminal },
-  { "Firefox", "firefox" },
-  { "gnome-control", "gnome-control-center" },
+  { "Firefox", spawn_with_systemd("firefox") },
   { "Bildschirmsperre", "slimlock" },
   { "Schlaf", "systemctl suspend" },
   { "Ruhezustand", "systemctl hibernate" },
@@ -265,6 +388,8 @@ mytextclock:connect_signal("mouse::enter",  function()
   uptimetooltip:set_text(text)
 end)
 -- }}}
+
+local testwidget = wibox.widget.textbox()
 
 -- {{{ Battery
 local batwidget = wibox.widget.textbox()
@@ -576,10 +701,10 @@ for s = 1, screen.count() do
   -- We need one layoutbox per screen.
   mylayoutbox[s] = awful.widget.layoutbox(s)
   mylayoutbox[s]:buttons(awful.util.table.join(
-			 awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
-			 awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
-			 awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
-			 awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
+       awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+       awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
+       awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
+       awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
   -- Create a taglist widget
   mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
 
@@ -616,6 +741,9 @@ for s = 1, screen.count() do
 
   mystatusbox[s] = awful.wibox({ position = "bottom", screen = s })
   local left_layout2 = wibox.layout.fixed.horizontal()
+
+  left_layout2:add(testwidget)
+
   left_layout2:add(cpuicon)
   left_layout2:add(cpuwidget)
   left_layout2:add(thermalicon)
@@ -651,6 +779,15 @@ root.buttons(awful.util.table.join(
 ))
 -- }}}
 
+local function random_string(len)
+  local res = {}
+  for i=1, len do
+    -- from range a-z
+    res[i] = string.char(math.random(97, 122))
+  end
+  return table.concat(res)
+end
+
 -- {{{ Key bindings
 local globalkeys = awful.util.table.join(
   awful.key({ modkey,           }, "Left",   awful.tag.viewprev       ),
@@ -668,11 +805,6 @@ local globalkeys = awful.util.table.join(
 	       if client.focus then client.focus:raise() end
 	    end),
   -- awful.key({ modkey,           }, "w",       function() mymainmenu:show()        end),
-  awful.key({ modkey, "Shift"   }, "n",       shifty.send_prev),                              -- move client to prev tag
-  awful.key({ modkey            }, "n",       shifty.send_next),                              -- move client to next tag
-  -- awful.key({ modkey            }, "w",       shifty.del),                                    -- delete a tag
-  -- awful.key({ modkey            }, "t",       shifty.add),                                    -- creat a new tag
-  -- awful.key({ modkey, "Shift"   }, "t",       function() shifty.add({ nopopup = true }) end), -- nopopup new tag
 
   -- Layout manipulation
   awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end),
@@ -697,7 +829,8 @@ local globalkeys = awful.util.table.join(
   -- Standard program
   awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
   awful.key({ modkey, "Control" }, "r", awesome.restart),
-  awful.key({ modkey, "Shift"   }, "q", awesome.quit),
+  --awful.key({ modkey, "Shift"   }, "q", awesome.quit),
+  awful.key({ modkey, "Shift"   }, "q", function() awful.util.spawn("systemctl --user exit") end),
   -- lockscreen
   awful.key({ modkey, "Shift"   }, "s", function () awful.util.spawn("slimlock") end),
 
@@ -726,11 +859,13 @@ local globalkeys = awful.util.table.join(
   awful.key({ }, "XF86AudioNext", function () mpc:next()        mpc:update() end),
   awful.key({ }, "XF86AudioPrev", function () mpc:previous()    mpc:update() end),
 
-  -- Easy way to share Screenshots over dropbox: The following code make a
-  -- Screenshot open it with Eye of Gnome, copy it to dropbox and put the
-  -- public link into the X-clipboard
+  -- use a systemd.path to automatically upload this image to my server and copy
+  -- the public link to clipboard
   awful.key({modkey }, "Print", function ()
-    awful.util.spawn("scrot --exec 'eog $f; mv $f Dropbox/Public;dropbox puburl Dropbox/Public/$f | xclip -selection clipboard'")
+    awful.util.spawn("scrot '%Y-%m-%d."..random_string(5)..".png' --exec 'eog \"$f\"; mv \"$f\" /home/joerg/upload'")
+  end),
+  awful.key({modkey, "Shift" }, "Print", false, function ()
+    awful.util.spawn("scrot '%Y-%m-%d."..random_string(5)..".png' --select --exec 'eog \"$f\"; mv \"$f\" /home/joerg/upload'")
   end),
 
   awful.key({ }, "XF86Display", function()
@@ -745,13 +880,14 @@ local globalkeys = awful.util.table.join(
   awful.key({ }, "XF86AudioMute",        function () pulse_toggle()  end),
 
   -- Calculator
-  awful.key({ modkey }, "c", function () awful.util.spawn("gcalctool") end),
+  awful.key({ modkey }, "c", function () awful.util.spawn("gnome-calculator") end),
   awful.key({ modkey, "Control" }, "c", function () awful.util.spawn("qalculate-gtk") end),
   -- }}}
 
   -- Prompt
   --awful.key({ modkey }, "r",     function () mypromptbox[mouse.screen]:run() end),
-  awful.key({ modkey }, "r", function () awful.util.spawn("gmrun") end),
+  --awful.key({ modkey }, "r", function () awful.util.spawn("gmrun") end),
+  awful.key({ modkey }, "r", function () awful.util.spawn("valauncher") end),
 --  awful.key({ modkey }, "s", function () menubar.show() end),
   awful.key({ modkey }, "x",
     function ()
@@ -784,49 +920,42 @@ local clientkeys = awful.util.table.join(
      end))
 
 
----- Compute the maximum number of digit we need, limited to 9
---keynumber = 0
---for s = 1, screen.count() do
---   keynumber = math.min(9, math.max(#tags[s], keynumber))
---end
---
----- Bind all key numbers to tags.
----- Be careful: we use keycodes to make it works on any keyboard layout.
----- This should map on the top row of your keyboard, usually 1 to 9.
---for i = 1, keynumber do
---    globalkeys = awful.util.table.join(globalkeys,
---        awful.key({ modkey }, "#" .. i + 9,
---                  function ()
---                        local screen = mouse.screen
---                        if tags[screen][i] then
---                            awful.tag.viewonly(tags[screen][i])
---                        end
---                  end),
---        awful.key({ modkey, "Control" }, "#" .. i + 9,
---                  function ()
---                      local screen = mouse.screen
---                      if tags[screen][i] then
---                          awful.tag.viewtoggle(tags[screen][i])
---                      end
---                  end),
---        awful.key({ modkey, "Shift" }, "#" .. i + 9,
---                  function ()
---                      if client.focus and tags[client.focus.screen][i] then
---                          awful.client.movetotag(tags[client.focus.screen][i])
---                      end
---                  end),
---        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
---                  function ()
---                      if client.focus and tags[client.focus.screen][i] then
---                          awful.client.toggletag(tags[client.focus.screen][i])
---                      end
---                  end))
---end
-
-clientbuttons = awful.util.table.join(
-    awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
-    awful.button({ modkey }, 1, awful.mouse.client.move),
-    awful.button({ modkey }, 3, awful.mouse.client.resize))
+-- Bind all key numbers to tags.
+-- Be careful: we use keycodes to make it works on any keyboard layout.
+-- This should map on the top row of your keyboard, usually 1 to 9.
+for i = 1, 9 do
+    globalkeys = awful.util.table.join(globalkeys,
+        awful.key({ modkey }, "#" .. i + 9,
+                  function ()
+                        local screen = mouse.screen
+                        local tag = awful.tag.gettags(screen)[i]
+                        if tag then
+                           awful.tag.viewonly(tag)
+                        end
+                  end),
+        awful.key({ modkey, "Control" }, "#" .. i + 9,
+                  function ()
+                      local screen = mouse.screen
+                      local tag = awful.tag.gettags(screen)[i]
+                      if tag then
+                         awful.tag.viewtoggle(tag)
+                      end
+                  end),
+        awful.key({ modkey, "Shift" }, "#" .. i + 9,
+                  function ()
+                      local tag = awful.tag.gettags(client.focus.screen)[i]
+                      if client.focus and tag then
+                          awful.client.movetotag(tag)
+                     end
+                  end),
+        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
+                  function ()
+                      local tag = awful.tag.gettags(client.focus.screen)[i]
+                      if client.focus and tag then
+                          awful.client.toggletag(tag)
+                      end
+                  end))
+end
 
 -- Bind all key numbers to tags.
 -- Be careful: we use keycodes to make it works on any keyboard layout.
@@ -838,49 +967,77 @@ local keystore = {
    4, --> doc
    5, --> java
    "d",  --> down
-   "p",  --> pcmanfm
+   "s",  --> stuurman
    "e",  --> emacs
    "a",  --> ario
-   "i",  --> ida
    "v",  --> video
    "w",  --> wine
-   "g",  --> gimp
 }
 for i = 1, #keystore do
    globalkeys = awful.util.table.join(globalkeys,
    awful.key({ modkey }, keystore[i],
      function ()
-       local t = awful.tag.viewonly(shifty.getpos(i))
+       local screen = mouse.screen
+       local tag = awful.tag.gettags(screen)[i]
+       if tag then
+         awful.tag.viewonly(tag)
+       end
      end),
    awful.key({ modkey, "Control" }, keystore[i],
      function ()
-       t = shifty.getpos(i)
-       t.selected = not t.selected
-     end),
-   awful.key({ modkey, "Control", "Shift" }, keystore[i],
-     function()
-       if client.focus then
-         awful.client.toggletag(shifty.getpos(i))
+       local screen = mouse.screen
+       local tag = awful.tag.gettags(screen)[i]
+       if tag then
+         awful.tag.viewtoggle(tag)
        end
      end),
    -- move clients to other tags
    awful.key({ modkey, "Shift" }, keystore[i],
      function ()
        if client.focus then
-         local t = shifty.getpos(i)
-         awful.client.movetotag(t)
-         awful.tag.viewonly(t)
+         local tag = awful.tag.gettags(client.focus.screen)[i]
+         if client.focus and tag then
+           awful.client.movetotag(tag)
+         end
+       end
+     end),
+   awful.key({ modkey, "Control", "Shift" }, keystore[i],
+     function()
+       local tag = awful.tag.gettags(client.focus.screen)[i]
+       if client.focus and tag then
+         awful.client.toggletag(tag)
        end
      end))
 end
 
+clientbuttons = awful.util.table.join(
+    awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
+    awful.button({ modkey }, 1, awful.mouse.client.move),
+    awful.button({ modkey }, 3, awful.mouse.client.resize))
+
 -- Set keys
 root.keys(globalkeys)
-shifty.config.clientkeys = clientkeys
-shifty.config.modkey = modkey
+-- }}}
 
-shifty.taglist = mytaglist
-shifty.init()
+-- {{{ Rules
+awful.rules.rules = {
+    -- All clients will match this rule.
+    { rule = { },
+      properties = { border_width = beautiful.border_width,
+                     border_color = beautiful.border_normal,
+                     focus = awful.client.focus.filter,
+                     keys = clientkeys,
+                     buttons = clientbuttons } },
+    { rule = { class = "MPlayer" },
+      properties = { floating = true } },
+    { rule = { class = "pinentry" },
+      properties = { floating = true } },
+    { rule = { class = "gimp" },
+      properties = { floating = true } },
+    -- Set Firefox to always map on tags number 2 of screen 1.
+    -- { rule = { class = "Firefox" },
+    --   properties = { tag = tags[1][2] } },
+}
 -- }}}
 
 -- {{{ Signals
@@ -972,6 +1129,16 @@ naughty.notify{
 
 -- Java helper
 awful.util.spawn("wmname LG3D")
---vicious.suspend()
+vicious.suspend()
+vicious.activate(batwidget)
+vicious.activate(batbar)
+vicious.activate(wifiwidget)
+
+--timer = timer({ timeout = 0.2 })
+--timer:connect_signal("timeout", function()
+--  testwidget:set_text(tostring(math.random() % 10))
+--end)
+--testwidget:set_text("test")
+--timer:start()
 
 -- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=2:tabstop=2:softtabstop=2:textwidth=80

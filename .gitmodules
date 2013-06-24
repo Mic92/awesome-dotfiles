@@ -4,9 +4,6 @@
 [submodule "vicious"]
 	path = vicious
 	url = git@github.com:Mic92/vicious.git
-[submodule "shifty"]
-	path = shifty
-	url = git://github.com/bioe007/awesome-shifty.git
 [submodule "awesome-themes"]
 	path = awesome-themes
 	url = https://github.com/mikar/awesome-themes.git
