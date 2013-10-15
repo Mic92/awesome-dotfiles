@@ -22,8 +22,6 @@ local beautiful = require("beautiful")
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
--- dynamic tagging library
---local shifty = require("shifty")
 local tyrannical = require("tyrannical")
 -- widget library
 local vicious = require("vicious")
@@ -81,8 +79,8 @@ beautiful.tooltip_fg_color = beautiful.fg_normal
 local spawn_with_systemd = function(app)
   return "systemctl --user start app@"..app..".service"
 end
-local terminal   = os.getenv("TERMINAL") or "xterm"
-local editor     = os.getenv("EDITOR") or "nano"
+local terminal   = os.getenv("TERMINAL") or "urxvt"
+local editor     = os.getenv("EDITOR") or "vim"
 local browser    = os.getenv("BROWSER") or "firefox"
 local mail       = "thunderbird"
 local editor_cmd = terminal.." -e "..editor
@@ -248,77 +246,6 @@ tyrannical.properties.size_hints_honor = {
   xterm = false, URxvt = false, aterm = false
 }
 
---shifty.config.tags = {
---   ["1:web"]     = { position = 1, screen = 2, exclusive = true, init = true, nopopup = true,
---                     spawn = spawn_with_systemd(browser) },
---   ["2:dev"]     = { position = 2, exclusive = true, spawn = spawn_with_systemd(terminal) },
---   ["3:im"]      = { position = 3, exclusive = true, nopopup = true,
---                     spawn = spawn_with_systemd("pidgin")},
---   ["4:doc"]     = { position = 4, exclusive = true },
---   ["5:java"]    = { position = 5, exclusive = true },
---   ["d:own"]     = { position = 6, exclusive = true },
---   ["p:cfm"]     = { position = 7, exclusive = true, spawn = spawn_with_systemd("pcmanfm") },
---   ["e:macs"]    = { position = 8, exclusive = true, spawn = spawn_with_systemd("emacs") },
---   ["a:rio"]     = { position = 9, exclusive = true, spawn = spawn_with_systemd("sonata") },
---   ["v:ideo"]    = { position = 11,exclusive = true },
---   ["w:ine"]     = { position = 12,exclusive = true},
---   ["g:imp"]     = { position = 13,exclusive = true, spawn = spawn_with_systemd("gimp") },
---   ["brasero"]   = { position = 14,exclusive = true},
---}
-
--- client settings
--- order here matters, early rules will be applied first
---shifty.config.apps = {
---  { match = { "Firefox", "Opera", "chromium", "Aurora",
---  "Developer Tools", "Mail", "Thunderbird" },               tag = "1:web" },
---  { match = { "xterm", "urxvt" },                           tag = "2:dev", opacity = 0.4,
---                                                            honorsizehints = false},
---  { match = { "buddy_list" },                               no_urgent = true},
---  { match = { "kopete", "Pidgin", "skype", "gajim" },       tag = "3:im" },
---  { match = { "evince", "gvim", "keepassx", "libreoffice" },tag = "4:doc" },
---  { match = { "ncmpcpp", "Goggles Music", "sonata" },       tag = "a:rio" },
---  { match = { "gpodder", "JDownloader", "Transmission" },   tag = "d:own" },
---  { match = { "*mplayer*", "MPlayer", "vlc" },              tag = "v:ideo" },
---  { match = { "gimp" },                                     tag = "g:imp" },
---  { match = { "pcmanfm", "dolphin", "nautilus", "thunar" }, tag = "p:cfm",
---    nopopup = true, no_urgent = true },
---  { match = { "emacs" },                                    tag = "e:macs"},
---  { match = { "Wine" },                                     tag = "w:ine" },
---  { match = { "hamster" },                                  tag = "hamster" },
---  -- For android only ;)
---  { match = { "Eclipse", "NetBeans IDE", "jetbrains" },     tag = "5:java" },
---  { match = { "gmrun", "qalculate", "gcalctool", "Komprimieren","Wicd*" },
---    intrusive = true, ontop = true, above = true, dockable = true },
---  -- buttons to resize/move clients
---  { match = { "" },
---    buttons = awful.util.table.join(
---      awful.button({}, 1, function (c) client.focus = c; c:raise() end),
---      awful.button({modkey}, 1, function (c)
---        client.focus = c
---        c:raise()
---        awful.mouse.client.move(c)
---      end),
---      awful.button({modkey}, 3, awful.mouse.client.resize )),
---  }
---}
-
--- SHIFTY: default tag creation rules
--- parameter description
---  * floatBars : if floating clients should always have a titlebar
---  * guess_name : should shifty try and guess tag names when creating
---                 new (unconfigured) tags?
---  * guess_position: as above, but for position parameter
---  * run : function to exec when shifty creates a new tag
---  * all other parameters (e.g. layout, mwfact) follow awesome's tag API
---shifty.config.defaults = {
---   layout = awful.layout.suit.tile.left,
---   ncol = 1,
---   mwfact = 0.60,
---   floatBars      = true,
---   guess_name     = true,
---   guess_position = true,
---}
--- }}}
 
 -- {{{ Menu
 -- Create a laucher widget and a main menu
@@ -329,7 +256,7 @@ local myawesomemenu = {
    { "xrandr", "xrandr --auto" },
    { "arandr", "arandr" },
    { "restart", awesome.restart },
-   { "quit",  "systemctl --user exit" }
+   { "quit",  awesome.quit }
 }
 
 local mymainmenu = awful.menu({ items = {
@@ -411,8 +338,8 @@ batbar:set_color({ type = "linear", from = { 0, 0 }, to = { 0, 30 },
      stops = { { 0, "#AECF96" }, { 1, "#FF5656" } } })
 
 vicious.cache(vicious.widgets.bat)
-vicious.register(batbar, vicious.widgets.bat, "$2",  11, "BAT1")
-vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 11, "BAT1")
+vicious.register(batbar, vicious.widgets.bat, "$2", 7, "BAT1")
+vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT1")
 -- }}}
 
 --{{{ Pulseaudio
@@ -448,7 +375,7 @@ local function pulse_toggle()
   vicious.force({ pulsewidget, pulsebar})
 end
 
-vicious.register(pulsebar, vicious.contrib.pulse, "$1",  5)
+vicious.register(pulsebar, vicious.contrib.pulse, "$1",  7)
 vicious.register(pulsewidget, vicious.contrib.pulse,
 function (widget, args)
    return string.format("%.f%%", args[1])
@@ -490,7 +417,7 @@ function (widget, args)
     else text = args[i].."%" end
   end
   return text
-end)
+end, 7)
 -- Register buttons
 cpuwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e htop") end) )
 cpuicon:buttons( cpuwidget:buttons() )
@@ -501,7 +428,7 @@ cpuicon:buttons( cpuwidget:buttons() )
 local thermalwidget = wibox.widget.textbox()
 local thermalicon = wibox.widget.imagebox()
 thermalicon:set_image(icon_path.."temp.png")
-vicious.register(thermalwidget, vicious.widgets.thermal, "$1°C", 5, {"thermal_zone0", "sys"})
+vicious.register(thermalwidget, vicious.widgets.thermal, "$1°C", 7, {"thermal_zone0", "sys"})
 -- }}}
 
 -- {{{ Memory usage
@@ -509,7 +436,7 @@ vicious.register(thermalwidget, vicious.widgets.thermal, "$1°C", 5, {"thermal_z
 local memwidget = wibox.widget.textbox()
 local memicon = wibox.widget.imagebox()
 memicon:set_image(icon_path.."mem.png")
-vicious.register(memwidget, vicious.widgets.mem, "$2MB/$3MB ", 5)
+vicious.register(memwidget, vicious.widgets.mem, "$2MB/$3MB ", 7)
 -- Register buttons
 memwidget:buttons( cpuwidget:buttons() )
 memicon:buttons( cpuwidget:buttons() )
@@ -532,7 +459,7 @@ function (widget, args)
    end
    neticon.visible = true
    return string.format("%skb/%skb", up, down)
-end, 5)
+end, 7)
 -- Register buttons
 netwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e sudo nethogs -d 2 -p wlan0") end) )
 neticon:buttons( netwidget:buttons() )
@@ -543,7 +470,7 @@ local ioicon = wibox.widget.imagebox()
 ioicon:set_image(icon_path.."disk.png")
 ioicon.visible = true
 local iowidget = wibox.widget.textbox()
-vicious.register(iowidget, vicious.widgets.dio, "SSD ${sda read_mb}/${sda write_mb}MB", 3)
+vicious.register(iowidget, vicious.widgets.dio, "SSD ${sda read_mb}/${sda write_mb}MB", 7)
 -- Register buttons
 iowidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e sudo iotop") end) )
 -- }}}
@@ -570,7 +497,7 @@ function(widget, args)
       pkgicon.visible = true
       return markup.urgent("<b>Updates</b> "..args[1]).." "
    end
-end, 183, "Arch")
+end, 180, "Arch")
 
 pkgwidget:buttons( awful.button({ }, 1,
 function ()
@@ -612,7 +539,7 @@ vicious.register(wifiwidget, vicious.widgets.wifi, function(widget, args)
   end
   wifitooltip:set_text(tooltip)
   return ("%s: %.1f%%"):format(args["{ssid}"], quality)
-end, 7, "wlan0")
+end, 5, "wlan0")
 wifiicon:buttons( wifiwidget:buttons(awful.util.table.join(
 awful.button({}, 1, function()
   local networks = iwlist.scan_networks()
@@ -829,8 +756,7 @@ local globalkeys = awful.util.table.join(
   -- Standard program
   awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
   awful.key({ modkey, "Control" }, "r", awesome.restart),
-  --awful.key({ modkey, "Shift"   }, "q", awesome.quit),
-  awful.key({ modkey, "Shift"   }, "q", function() awful.util.spawn("systemctl --user exit") end),
+  awful.key({ modkey, "Shift"   }, "q", awesome.quit),
   -- lockscreen
   awful.key({ modkey, "Shift"   }, "s", function () awful.util.spawn("slimlock") end),
 
@@ -862,10 +788,10 @@ local globalkeys = awful.util.table.join(
   -- use a systemd.path to automatically upload this image to my server and copy
   -- the public link to clipboard
   awful.key({modkey }, "Print", function ()
-    awful.util.spawn("scrot '%Y-%m-%d."..random_string(5)..".png' --exec 'eog \"$f\"; mv \"$f\" /home/joerg/upload'")
+    awful.util.spawn("scrot '%Y-%m-%d."..random_string(5)..".png' --exec 'eog \"$f\"; mv \"$f\" /home/joerg/Bilder'")
   end),
   awful.key({modkey, "Shift" }, "Print", false, function ()
-    awful.util.spawn("scrot '%Y-%m-%d."..random_string(5)..".png' --select --exec 'eog \"$f\"; mv \"$f\" /home/joerg/upload'")
+    awful.util.spawn("scrot '%Y-%m-%d."..random_string(5)..".png' --select --exec 'eog \"$f\"; mv \"$f\" /home/joerg/Bilder'")
   end),
 
   awful.key({ }, "XF86Display", function()
@@ -886,7 +812,6 @@ local globalkeys = awful.util.table.join(
 
   -- Prompt
   --awful.key({ modkey }, "r",     function () mypromptbox[mouse.screen]:run() end),
-  --awful.key({ modkey }, "r", function () awful.util.spawn("gmrun") end),
   awful.key({ modkey }, "r", function () awful.util.spawn("valauncher") end),
 --  awful.key({ modkey }, "s", function () menubar.show() end),
   awful.key({ modkey }, "x",
@@ -943,17 +868,21 @@ for i = 1, 9 do
                   end),
         awful.key({ modkey, "Shift" }, "#" .. i + 9,
                   function ()
+                    if client.focus then
                       local tag = awful.tag.gettags(client.focus.screen)[i]
-                      if client.focus and tag then
-                          awful.client.movetotag(tag)
-                     end
+                      if tag then
+                        awful.client.movetotag(tag)
+                      end
+                    end
                   end),
         awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
                   function ()
+                    if client.focus then
                       local tag = awful.tag.gettags(client.focus.screen)[i]
-                      if client.focus and tag then
-                          awful.client.toggletag(tag)
+                      if tag then
+                        awful.client.toggletag(tag)
                       end
+                    end
                   end))
 end
 
@@ -1129,16 +1058,9 @@ naughty.notify{
 
 -- Java helper
 awful.util.spawn("wmname LG3D")
-vicious.suspend()
-vicious.activate(batwidget)
-vicious.activate(batbar)
-vicious.activate(wifiwidget)
-
---timer = timer({ timeout = 0.2 })
---timer:connect_signal("timeout", function()
---  testwidget:set_text(tostring(math.random() % 10))
---end)
---testwidget:set_text("test")
---timer:start()
+--vicious.suspend()
+--vicious.activate(batwidget)
+--vicious.activate(batbar)
+--vicious.activate(wifiwidget)
 
 -- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=2:tabstop=2:softtabstop=2:textwidth=80
