@@ -15,7 +15,7 @@ Personally I build awesome with luajit ([awesome-luajit-git](https://aur.archlin
 
 * [lognotify](https://github.com/Mic92/lognotify) -> depends on inotify and luasocket (read the Readme of lognotify)
 
-* in utils repository:
+* in [utils](https://github.com/Mic92/utils) repository:
     - iwlist (wrapper around iwlist to display wifi-networks)
     - wimpd (widget for mpd, depends on luasocket)
     - cal (calendar popup)
