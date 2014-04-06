@@ -2,9 +2,9 @@
 awesome.lua - main config of my window manager
 awesome v3.5.4 (Brown Paper Bag)
 os: archlinux x86_64
-cpu: Intel(R) Core(TM) i3-2310M CPU @ 2.10GHz
-grapic:  Intel Graphics 3000
-screen: [1] 1366x768
+cpu: Intel(R) Core(TM) i5-4200U CPU @ 1.60GHz
+grapic:  Intel Graphics 4400
+screen: 1920 x 1080
 --]]
 
 -- {{{ Awesome Library
