@@ -2,7 +2,7 @@ awesome config
 ==============
 
 Here is my personal configuration of awesome.
-Currently I use awesome v3.5.2 (The Fox)
+Currently I use awesome v3.5.4 (Brown Paper Bag)
 
 with the following modules:
 

@@ -1,6 +1,6 @@
 --[[
 awesome.lua - main config of my window manager
-awesome v3.5.2 (The Fox)
+awesome v3.5.4 (Brown Paper Bag)
 os: archlinux x86_64
 cpu: Intel(R) Core(TM) i3-2310M CPU @ 2.10GHz
 grapic:  Intel Graphics 3000
