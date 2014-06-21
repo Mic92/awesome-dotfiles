@@ -327,7 +327,7 @@ uptimetooltip:add_to_object(mytextclock)
 mytextclock:connect_signal("mouse::enter",  function()
   local args = vicious.widgets.uptime()
   local text = (" <b>Uptime</b> %dd %dh %dmin "):format(args[1], args[2], args[3])
-  uptimetooltip:set_text(text)
+  uptimetooltip:set_markup(text)
 end)
 -- }}}
 
