@@ -338,26 +338,13 @@ local testwidget = wibox.widget.textbox()
 
 -- {{{ Battery
 local batwidget = wibox.widget.textbox()
+local bat2widget = wibox.widget.textbox()
 local baticon   = wibox.widget.imagebox()
 baticon:set_image(icon_path.."bat.png")
-local batbar    = awful.widget.progressbar()
-local batbox    = wibox.layout.margin(batbar, 2, 2, 4, 4)
 
--- Progressbar properties
-batbar:set_width(8)
-batbar:set_height(10)
-batbar:set_ticks(true)
-batbar:set_height(1)
-batbar:set_ticks_size(2)
-batbar:set_vertical(true)
-batbar:set_background_color(beautiful.fg_off_widget)
-batbar:set_color(beautiful.fg_widget)
-batbar:set_color({ type = "linear", from = { 0, 0 }, to = { 0, 30 },
-     stops = { { 0, "#AECF96" }, { 1, "#FF5656" } } })
 
-vicious.cache(vicious.widgets.bat)
-vicious.register(batbar, vicious.widgets.bat, "$2", 7, "BAT1")
 vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT1")
+vicious.register(bat2widget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT0")
 -- }}}
 
 --{{{ Pulseaudio
@@ -668,7 +655,7 @@ for s = 1, screen.count() do
   right_layout:add(wifiwidget)
   right_layout:add(baticon)
   right_layout:add(batwidget)
-  right_layout:add(batbox)
+  right_layout:add(bat2widget)
   right_layout:add(pulseicon)
   right_layout:add(pulsewidget)
   right_layout:add(pulsebox)
