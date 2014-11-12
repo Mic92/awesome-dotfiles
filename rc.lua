@@ -84,7 +84,7 @@ local spawn_with_systemd = function(app)
 end
 local terminal   = os.getenv("TERMINAL") or "urxvt"
 local editor     = os.getenv("EDITOR") or "vim"
-local browser    = os.getenv("BROWSER") or "firefox"
+local browser    = os.getenv("BROWSER") or "chromium"
 local mail       = "thunderbird"
 local editor_cmd = terminal.." -e "..editor
 
@@ -135,7 +135,7 @@ tyrannical.tags = {
     exclusive = true,
     screen = 1,
     layout = awful.layout.suit.tile,
-    exec_once = { spawn_with_systemd(browser) },
+    exec_once = { "systemctl --user start "..browser },
     class = { "Firefox", "Opera", "Chromium", "Aurora", "birdie",
       "Thunderbird", "evolution" },
   },
