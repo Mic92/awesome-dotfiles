@@ -36,6 +36,9 @@ local iwlist = require("utils.iwlist")
 -- MPD widget based on mpd.lua
 local wimpd  = require("utils.wimpd")
 local mpc = wimpd.new()
+
+-- enable luajit
+pcall(function() jit.on() end)
 -- }}}
 
 -- {{{ Error handling
