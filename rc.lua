@@ -80,7 +80,7 @@ beautiful.tooltip_fg_color = beautiful.fg_normal
 
 -- This is used later as the default terminal and editor to run.
 local spawn_with_systemd = function(app)
-  return "systemctl --user start app@"..app..".service"
+  return "systemd-run --user --unit '"..app.."' '"..app.."'"
 end
 local terminal   = os.getenv("TERMINAL") or "urxvt"
 local editor     = os.getenv("EDITOR") or "vim"
