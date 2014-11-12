@@ -372,30 +372,28 @@ vicious.cache(vicious.contrib.pulse)
 
 local function pulse_volume(delta)
   vicious.contrib.pulse.add(delta, "alsa_output.pci-0000_00_1b.0.analog-stereo")
-vicious.force({ pulsewidget, pulsebar})
+  vicious.force({ pulsewidget, pulsebar})
 end
 
 local function pulse_toggle()
-vicious.contrib.pulse.toggle("alsa_output.pci-0000_00_1b.0.analog-stereo")
-vicious.force({ pulsewidget, pulsebar})
+  vicious.contrib.pulse.toggle("alsa_output.pci-0000_00_1b.0.analog-stereo")
+  vicious.force({ pulsewidget, pulsebar})
 end
 
-vicious.register(pulsebar, vicious.contrib.pulse, "$1",  7)
+vicious.register(pulsebar, vicious.contrib.pulse, "$1", 7)
 vicious.register(pulsewidget, vicious.contrib.pulse,
 function (widget, args)
- return string.format("%.f%%", args[1])
-end, 7)
+  return string.format("%.f%%", args[1])
+end, 7, "alsa_output.pci-0000_00_1b.0.analog-stereo")
 
 pulsewidget:buttons(awful.util.table.join(
-awful.button({ }, 1, function () awful.util.spawn("pavucontrol") end), --left click
-awful.button({ }, 2,
-function () pulse_toggle() end),
-awful.button({ }, 4, -- scroll up
- function () pulse_volume(5)  end),
-awful.button({ }, 5, -- scroll down
- function () pulse_volume(-5) end)))
-pulsebar:buttons( pulsewidget:buttons() )
-pulseicon:buttons( pulsewidget:buttons() )
+  awful.button({ }, 1, function() awful.util.spawn("pavucontrol") end), --left click
+  awful.button({ }, 2, function() pulse_toggle() end),
+  awful.button({ }, 4, function() pulse_volume(5) end), -- scroll up
+  awful.button({ }, 5, function() pulse_volume(-5) end))) -- scroll down
+
+pulsebar:buttons(pulsewidget:buttons())
+pulseicon:buttons(pulsewidget:buttons())
 --}}}
 
 -- {{{ CPU usage
