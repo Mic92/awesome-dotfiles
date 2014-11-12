@@ -161,7 +161,7 @@ tyrannical.tags = {
     mwfact = 0.25,
     init = true,
     layout = awful.layout.suit.tile,
-    exec_once = { spawn_with_systemd("pidgin") },
+    exec_once = { spawn_with_systemd("gajim") },
     class = { "Kopete", "Pidgin", "gajim" }
   },
   {
