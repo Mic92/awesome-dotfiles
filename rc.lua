@@ -13,6 +13,7 @@ print("[awesome] Entered awesome.lua: "..os.date())
 -- Standard awesome library
 local gears = require("gears")
 local awful = require("awful")
+local tyrannical = require("tyrannical")
 awful.rules = require("awful.rules")
 require("awful.autofocus")
 -- Widget and layout library
@@ -22,7 +23,6 @@ local beautiful = require("beautiful")
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
-local tyrannical = require("tyrannical")
 -- widget library
 local vicious = require("vicious")
 vicious.contrib = require("vicious.contrib")
@@ -98,7 +98,7 @@ local modkey2   = "Mod1"
 local icon_path = awful.util.getdir("config").."/icons/"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
-awful.layout.layouts = {
+local layouts = {
   awful.layout.suit.tile,               -- 1
   awful.layout.suit.tile.left,          -- 2
   awful.layout.suit.tile.bottom,        -- 3
@@ -114,18 +114,9 @@ awful.layout.layouts = {
 }
 -- }}}
 
--- {{{ Wallpaper
-if beautiful.wallpaper then
-    for s = 1, screen.count() do
-        gears.wallpaper.maximized(beautiful.wallpaper, s, true)
-    end
-end
--- }}}
-
--- {{{ Shifty configuration
--- tag settings
--- the exclusive in each definition seems to be overhead, but it prevent new on-the-fly tags to be exclusive
--- the follow function make it easier to swap tags
+-- First, set some settings
+tyrannical.settings.default_layout = awful.layout.suit.tile.left
+tyrannical.settings.mwfact = 0.66
 
 tyrannical.tags = {
   {
@@ -135,7 +126,7 @@ tyrannical.tags = {
     exclusive = true,
     screen = 1,
     layout = awful.layout.suit.tile,
-    exec_once = { "systemctl --user start "..browser },
+    exec_once = { browser },
     class = { "Firefox", "Opera", "Chromium", "Aurora", "birdie",
       "Thunderbird", "evolution" },
   },
@@ -146,7 +137,7 @@ tyrannical.tags = {
     init = true,
     screen = 1,
     layout = awful.layout.suit.tile,
-    exec_once = { spawn_with_systemd(terminal) },
+    exec_once = { terminal },
     class       = {
       "xterm" , "urxvt" , "aterm", "URxvt", "XTerm"
     },
@@ -161,7 +152,7 @@ tyrannical.tags = {
     mwfact = 0.25,
     init = true,
     layout = awful.layout.suit.tile,
-    exec_once = { spawn_with_systemd("gajim") },
+    exec_once = { "gajim" },
     class = { "Kopete", "Pidgin", "gajim" }
   },
   {
@@ -194,7 +185,7 @@ tyrannical.tags = {
     exclusive = true,
     init = false,
     layout = awful.layout.suit.tile,
-    exec_once = { spawn_with_systemd("pcmanfm") },
+    exec_once = { "pcmanfm" },
     class = { "skype" }
   },
   {
@@ -203,7 +194,7 @@ tyrannical.tags = {
     exclusive = true,
     init = false,
     layout = awful.layout.suit.tile,
-    exec_once = { spawn_with_systemd("pcmanfm") },
+    exec_once = { "pcmanfm" },
     class = { "pcmanfm", "dolphin", "nautilus", "thunar" }
   },
   {
@@ -212,7 +203,7 @@ tyrannical.tags = {
     exclusive = true,
     init = false,
     layout = awful.layout.suit.tile,
-    exec_once = { spawn_with_systemd("emacs") },
+    exec_once = { "emacs" },
     class = { "emacs" }
   },
   {
@@ -262,8 +253,16 @@ tyrannical.properties.maximized_vertical = full_screen_apps
 tyrannical.properties.size_hints_honor = {
   xterm = false, URxvt = false, aterm = false
 }
-
 --}}}
+
+-- {{{ Wallpaper
+if beautiful.wallpaper then
+    for s = 1, screen.count() do
+        gears.wallpaper.maximized(beautiful.wallpaper, s, true)
+    end
+end
+-- }}}
+
 
 -- {{{ Menu
 -- Create a laucher widget and a main menu
@@ -448,19 +447,22 @@ memicon:buttons( cpuwidget:buttons() )
 local netwidget = wibox.widget.textbox()
 local neticon  = wibox.widget.imagebox()
 neticon:set_image(icon_path.."netio.png")
+-- list all ethernet and wlan devices (including usb tethering)
 vicious.register(netwidget, vicious.widgets.net,
 function (widget, args)
  local down, up
- if args["{enp0s25 down_kb}"] ~= "0.0" or args["{enp0s25 up_kb}"] ~= "0.0" then
-    down, up = args["{enp0s25 down_kb}"], args["{enp0s25 up_kb}"]
- elseif args["{wlp3s0 down_kb}"] ~= "0.0" or args["{wlp3s0 up_kb}"] ~= "0.0" then
-    down, up = args["{wlp3s0 down_kb}"], args["{wlp3s0 up_kb}"]
- else
-   neticon.visible = false
-   return ""
+ for k, v in pairs(args) do
+   local dev = k:match("^{enp[^ ]+") or k:match("^{wlp[^ ]+")
+   if dev ~= nil then
+     down, up = args[dev.." down_kb}"], args[dev.." up_kb}"]
+     if (down ~= "0.0" and down ~= nil) or (up ~= "0.0" and up ~= nil) then
+       neticon.visible = true
+       return string.format("%skb/%skb", up, down)
+     end
+   end
  end
- neticon.visible = true
- return string.format("%skb/%skb", up, down)
+ neticon.visible = false
+ return ""
 end, 7)
 -- Register buttons
 netwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e sudo nethogs -d 2 -p wlp3s0") end) )
@@ -630,10 +632,10 @@ for s = 1, screen.count() do
   -- We need one layoutbox per screen.
   mylayoutbox[s] = awful.widget.layoutbox(s)
   mylayoutbox[s]:buttons(awful.util.table.join(
-       awful.button({ }, 1, function () awful.layout.inc(1) end),
-       awful.button({ }, 3, function () awful.layout.inc(-1) end),
-       awful.button({ }, 4, function () awful.layout.inc(1) end),
-       awful.button({ }, 5, function () awful.layout.inc(-1) end)))
+       awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+       awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
+       awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
+       awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
   -- Create a taglist widget
   mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
 
@@ -760,7 +762,7 @@ local globalkeys = awful.util.table.join(
   awful.key({ modkey, "Control" }, "r", awesome.restart),
   awful.key({ modkey, "Shift"   }, "q", awesome.quit),
   -- lockscreen
-  awful.key({ modkey, "Shift"   }, "s", function () awful.util.spawn("slimlock") end),
+  awful.key({ modkey, "Shift"   }, "s", function () awful.util.spawn(os.getenv("HOME").."/bin/i3lock.sh") end),
 
   awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
   awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
@@ -768,8 +770,8 @@ local globalkeys = awful.util.table.join(
   awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
   awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1)         end),
   awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
-  awful.key({ modkey,           }, "space", function () awful.layout.inc(1) end),
-  awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1) end),
+  awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts, 1) end),
+  awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
   awful.key({ modkey, "Control" }, "n", awful.client.restore),
   --}}
 
@@ -806,6 +808,9 @@ local globalkeys = awful.util.table.join(
   awful.key({ }, "XF86AudioRaiseVolume", function () pulse_volume(5) end),
   awful.key({ }, "XF86AudioLowerVolume", function () pulse_volume(-5)end),
   awful.key({ }, "XF86AudioMute",        function () pulse_toggle()  end),
+
+  awful.key({ }, "XF86MonBrightnessUp", function () awful.util.spawn("xbacklight -inc 10") end),
+  awful.key({ }, "XF86MonBrightnessDown", function ()  awful.util.spawn("xbacklight -dec 10") end),
 
   -- Calculator
   awful.key({ modkey }, "c", function () awful.util.spawn("gnome-calculator") end),
@@ -997,9 +1002,6 @@ end)
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
--- }}}
-
--- {{{ Timer
 -- }}}
 
 -- {{{ Welcome Message
