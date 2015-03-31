@@ -369,13 +369,15 @@ pulsebar:set_color({ type = "linear", from = { 0, 0 }, to = { 0, 30 },
 -- Enable caching
 vicious.cache(vicious.contrib.pulse)
 
+local audio_card = "alsa_output.usb-C-Media_Electronics_Inc._USB_PnP_Sound_Device-00-Device.analog-stereo"
+
 local function pulse_volume(delta)
-  vicious.contrib.pulse.add(delta, "alsa_output.pci-0000_00_1b.0.analog-stereo")
+  vicious.contrib.pulse.add(delta, audio_card)
   vicious.force({ pulsewidget, pulsebar})
 end
 
 local function pulse_toggle()
-  vicious.contrib.pulse.toggle("alsa_output.pci-0000_00_1b.0.analog-stereo")
+  vicious.contrib.pulse.toggle(audio_card)
   vicious.force({ pulsewidget, pulsebar})
 end
 
@@ -383,7 +385,7 @@ vicious.register(pulsebar, vicious.contrib.pulse, "$1", 7)
 vicious.register(pulsewidget, vicious.contrib.pulse,
 function (widget, args)
   return string.format("%.f%%", args[1])
-end, 7, "alsa_output.pci-0000_00_1b.0.analog-stereo")
+end, 7, audio_card)
 
 pulsewidget:buttons(awful.util.table.join(
   awful.button({ }, 1, function() awful.util.spawn("pavucontrol") end), --left click
