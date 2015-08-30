@@ -543,7 +543,7 @@ local quality = 0
 if args["{linp}"] > 0 then
   quality = args["{link}"] / args["{linp}"] * 100
 end
-wifitooltip:set_text(tooltip)
+wifitooltip:set_markup(tooltip)
 return ("%s: %.1f%%"):format(args["{ssid}"], quality)
 end, 5, "wlp3s0")
 wifiicon:buttons( wifiwidget:buttons(awful.util.table.join(
