@@ -84,7 +84,7 @@ local spawn_with_systemd = function(app)
 end
 local terminal   = os.getenv("TERMINAL") or "urxvt"
 local editor     = os.getenv("EDITOR") or "vim"
-local browser    = os.getenv("BROWSER") or "chromium"
+local browser    = "chromium"
 local mail       = "thunderbird"
 local editor_cmd = terminal.." -e "..editor
 
@@ -128,7 +128,7 @@ tyrannical.tags = {
     layout = awful.layout.suit.tile,
     exec_once = { browser },
     class = { "Firefox", "Opera", "Chromium", "Aurora", "birdie",
-      "Thunderbird", "evolution" },
+      "Thunderbird", "evolution", "chromium-browser" },
   },
   {
     name = "2:dev",
@@ -369,7 +369,7 @@ pulsebar:set_color({ type = "linear", from = { 0, 0 }, to = { 0, 30 },
 -- Enable caching
 vicious.cache(vicious.contrib.pulse)
 
-local audio_card = "alsa_output.usb-C-Media_Electronics_Inc._USB_PnP_Sound_Device-00-Device.analog-stereo"
+local audio_card = "bluez_sink.08_01_16_14_7B_E1"
 
 local function pulse_volume(delta)
   vicious.contrib.pulse.add(delta, audio_card)
@@ -536,29 +536,27 @@ local wifiicon   = wibox.widget.imagebox()
 local wifitooltip= awful.tooltip({})
 wifitooltip:add_to_object(wifiwidget)
 wifiicon:set_image(icon_path.."wifi.png")
-vicious.register(wifiwidget, vicious.widgets.wifi, function(widget, args)
-local tooltip = ("<b>mode</b> %s <b>chan</b> %s <b>rate</b> %s Mb/s"):format(
-                args["{mode}"], args["{chan}"], args["{rate}"])
-local quality = 0
-if args["{linp}"] > 0 then
-  quality = args["{link}"] / args["{linp}"] * 100
-end
-wifitooltip:set_markup(tooltip)
-return ("%s: %.1f%%"):format(args["{ssid}"], quality)
+vicious.register(wifiwidget, vicious.widgets.wifiiw, function(widget, args)
+   local tooltip = ("<b>mode</b> %s <b>chan</b> %s <b>rate</b> %s Mb/s"):format(
+                   args["{mode}"], args["{chan}"], args["{rate}"])
+   local quality = args["{linp}"]
+   wifitooltip:set_markup(tooltip)
+   local name = awful.util.escape(args["{ssid}"])
+   return ("%s: %.1f%%"):format(name, quality)
 end, 5, "wlp3s0")
 wifiicon:buttons( wifiwidget:buttons(awful.util.table.join(
-awful.button({}, 1, function()
-local networks = iwlist.scan_networks("wlp3s0")
-if #networks > 0 then
-  local msg = {}
-  for i, ap in ipairs(networks) do
-    local line = "<b>ESSID:</b> %s <b>MAC:</b> %s <b>Qual.:</b> %.2f%% <b>%s</b>"
-    local enc = iwlist.get_encryption(ap)
-    msg[i] = line:format(ap.essid, ap.address, ap.quality, enc)
-  end
-  naughty.notify({text = table.concat(msg, "\n")})
-else
-end
+   awful.button({}, 1, function()
+   local networks = iwlist.scan_networks("wlp3s0")
+   if #networks > 0 then
+     local msg = {}
+     for i, ap in ipairs(networks) do
+       local line = "<b>ESSID:</b> %s <b>MAC:</b> %s <b>Qual.:</b> %.2f%% <b>%s</b>"
+       local enc = iwlist.get_encryption(ap)
+       msg[i] = line:format(ap.essid, ap.address, ap.quality, enc)
+     end
+     naughty.notify({text = table.concat(msg, "\n")})
+   else
+   end
 end),
 awful.button({ "Shift" }, 1, function ()
 -- restart-auto-wireless is just a script of mine,
@@ -1002,8 +1000,8 @@ client.connect_signal("mouse::enter", function(c)
     end
 end)
 
-client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+--client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+--client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
 
 -- {{{ Welcome Message
