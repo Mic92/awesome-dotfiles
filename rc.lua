@@ -76,14 +76,14 @@ local theme_path = awful.util.getdir("config").."/foobar/theme.lua"
 beautiful.init(theme_path)
 
 -- Use normal colors instead of focus colors for tooltips
-beautiful.tooltip_bg_color = beautiful.bg_normal
-beautiful.tooltip_fg_color = beautiful.fg_normal
+beautiful.tooltip_bg = beautiful.bg_normal
+beautiful.tooltip_fg = beautiful.fg_normal
 
 -- This is used later as the default terminal and editor to run.
 local spawn_with_systemd = function(app)
   return "systemd-run --user --unit '"..app.."' '"..app.."'"
 end
-local terminal   = os.getenv("TERMINAL") or "urxvt"
+local terminal   = "alacritty"
 local editor     = os.getenv("EDITOR") or "vim"
 local browser    = "chromium"
 local mail       = "thunderbird"
@@ -144,7 +144,7 @@ tyrannical.tags = {
     layout = awful.layout.suit.tile,
     exec_once = { terminal },
     class       = {
-      "xterm" , "urxvt" , "aterm", "URxvt", "XTerm"
+      "xterm" , "urxvt" , "aterm", "URxvt", "XTerm", "alacritty"
     },
     match       = {
       "konsole"
@@ -157,8 +157,8 @@ tyrannical.tags = {
     mwfact = 0.25,
     init = true,
     layout = awful.layout.suit.tile,
-    exec_once = { "gajim" },
-    class = { "Kopete", "Pidgin", "gajim" }
+    --exec_once = { "gajim" },
+    class = { "Kopete", "Pidgin", "gajim", "Dino", ".gajim-wrapped", "rambox" }
   },
   {
     name = "4:doc",
@@ -319,11 +319,24 @@ naughty.config.presets.critical.opacity = 0.8
 -- {{{ Vicious and MPD
 print("[awesome] initialize vicious")
 
+local function nerdfonts(string)
+  -- https://github.com/ryanoasis/nerd-fonts
+  local icon = wibox.widget.textbox()
+  icon:set_markup(' <span font_size="xx-large" color="white">'..string..'</span> ')
+  return icon
+end
+
+local function conkyicon(string)
+  -- https://github.com/Mic92/awesome-dotfiles/releases/tag/download
+  local icon = wibox.widget.textbox()
+  icon:set_markup(' <span font="ConkySymbols" font_size="large" color="white">'..string..'</span> ')
+  return icon
+end
+
 -- {{{ Date and time
 -- Create a textclock widget
 local mytextclock = awful.widget.textclock()
-local clockicon = wibox.widget.imagebox()
-clockicon:set_image(icon_path.."clock.png")
+local clockicon = nerdfonts("")
 -- Register calendar tooltip
 -- To use fg_focus, you have to set a different tooltip_fg_color since the
 -- default is already beautiful.fg_focus.
@@ -343,54 +356,64 @@ local testwidget = wibox.widget.textbox()
 -- {{{ Battery
 local batwidget = wibox.widget.textbox()
 local bat2widget = wibox.widget.textbox()
-local baticon   = wibox.widget.imagebox()
-baticon:set_image(icon_path.."bat.png")
 
+local baticon = nerdfonts("")
+local pulsebox    = wibox.layout.margin(pulsebar, 2, 2, 4, 4)
 
-vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT1")
-vicious.register(bat2widget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT0")
+--vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT1")
+--vicious.register(bat2widget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT0")
 -- }}}
 
 --{{{ Pulseaudio
-local pulseicon = wibox.widget.imagebox()
-pulseicon:set_image(icon_path.."volume.png")
+local pulseicon = nerdfonts("")
 -- Initialize widgets
 local pulsewidget = wibox.widget.textbox()
-local pulsebar    = awful.widget.progressbar()
-local pulsebox    = wibox.layout.margin(pulsebar, 2, 2, 4, 4)
-
--- Progressbar properties
-pulsebar:set_width(8)
-pulsebar:set_height(10)
-pulsebar:set_ticks(true)
-pulsebar:set_ticks_size(2)
-pulsebar:set_vertical(true)
-pulsebar:set_background_color(beautiful.fg_off_widget)
-pulsebar:set_color(beautiful.fg_widget)
--- Bar from green to red
-pulsebar:set_color({ type = "linear", from = { 0, 0 }, to = { 0, 30 },
-     stops = { { 0, "#AECF96" }, { 1, "#FF5656" } } })
+local pulsebar = wibox.widget.progressbar()
+local pulsebox = wibox.widget {
+    {
+        max_value     = 1,
+        widget        = pulsebar,
+        shape         = gears.shape.rounded_bar,
+        border_width  = 0.5,
+        border_color  = "#000000",
+        color         = {
+          type = "linear",
+          from = { 0, 0 },
+          to = { 0, 30 },
+          stops = {
+            { 0, "#AECF96" },
+            { 1, "#FF5656" }
+          }
+        }
+    },
+    forced_height = 10,
+    forced_width  = 8,
+    direction     = 'east',
+    color         = beautiful.fg_widget,
+    layout        = wibox.container.rotate,
+}
+local pulsebox = wibox.layout.margin(pulsebox, 1, 1, 3, 3)
 
 -- Enable caching
 vicious.cache(vicious.contrib.pulse)
 
-local audio_card = "bluez_sink.08_01_16_14_7B_E1"
+local audio_card = {"Master", "-D", "pulse"}
 
 local function pulse_volume(delta)
-  vicious.contrib.pulse.add(delta, audio_card)
+  -- vicious.contrib.pulse.add(delta, audio_card)
   vicious.force({ pulsewidget, pulsebar})
 end
 
 local function pulse_toggle()
-  vicious.contrib.pulse.toggle(audio_card)
+  -- vicious.contrib.pulse.toggle(audio_card)
   vicious.force({ pulsewidget, pulsebar})
 end
 
-vicious.register(pulsebar, vicious.contrib.pulse, "$1", 7)
-vicious.register(pulsewidget, vicious.contrib.pulse,
-function (widget, args)
-  return string.format("%.f%%", args[1])
-end, 7, audio_card)
+vicious.register(pulsebar, vicious.widgets.volume, "$1", 7, audio_card)
+vicious.register(pulsewidget, vicious.widgets.volume,
+  function (widget, args)
+    return string.format("%.f%%", args[1])
+  end, 7, audio_card)
 
 pulsewidget:buttons(awful.util.table.join(
   awful.button({ }, 1, function() awful.util.spawn("pavucontrol") end), --left click
@@ -402,29 +425,34 @@ pulsebar:buttons(pulsewidget:buttons())
 pulseicon:buttons(pulsewidget:buttons())
 --}}}
 
+
 -- {{{ CPU usage
 local cpuwidget = wibox.widget.textbox()
-local cpuicon = wibox.widget.imagebox()
-cpuicon:set_image(icon_path.."cpu.png")
+--local cpuicon = wibox.widget.imagebox()
+--cpuicon:set_image(icon_path.."cpu.png")
+local cpuicon = nerdfonts("")
 -- Initialize widgets
 vicious.register(cpuwidget, vicious.widgets.cpu,
 function (widget, args)
-local text
--- list all cpu cores
-for i=1,#args do
-  -- alerts, if system is stressed
-  --args[i] = markup.fg(markup.gradient(1,100,args[i]),args[i])
-  if args[i] > 90 then
-    args[i] = markup.fg("#FF5656", args[i]) -- light red
-  elseif args[i] > 70 then
-    args[i] = markup.fg("#AECF96", args[i]) -- light green
-  end
+  local text
+  -- list all cpu cores
+  for i=1,#args do
+    -- alerts, if system is stressed
+    --args[i] = markup.fg(markup.gradient(1,100,args[i]),args[i])
+    if args[i] > 90 then
+      args[i] = markup.fg("#FF5656", args[i]) -- light red
+    elseif args[i] > 70 then
+      args[i] = markup.fg("#AECF96", args[i]) -- light green
+    end
 
-  -- append to list
-  if i > 2 then text = text.."/"..args[i].."%"
-  else text = args[i].."%" end
-end
-return text
+    -- append to list
+    if i > 2 then
+      text = text.."/"..args[i].."%"
+    else
+      text = args[i].."%"
+    end
+  end
+  return text
 end, 7)
 -- Register buttons
 cpuwidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e htop") end) )
@@ -434,17 +462,16 @@ cpuicon:buttons( cpuwidget:buttons() )
 
 -- {{{ CPU temperature
 local thermalwidget = wibox.widget.textbox()
-local thermalicon = wibox.widget.imagebox()
-thermalicon:set_image(icon_path.."temp.png")
+local thermalicon = nerdfonts("")
 vicious.register(thermalwidget, vicious.widgets.thermal, "$1°C", 7, {"thermal_zone0", "sys"})
 -- }}}
 
 -- {{{ Memory usage
 -- Initialize widget
 local memwidget = wibox.widget.textbox()
-local memicon = wibox.widget.imagebox()
-memicon:set_image(icon_path.."mem.png")
+local memicon = conkyicon("J")
 vicious.register(memwidget, vicious.widgets.mem, "$2MB/$3MB ", 7)
+
 -- Register buttons
 memwidget:buttons( cpuwidget:buttons() )
 memicon:buttons( cpuwidget:buttons() )
@@ -452,8 +479,7 @@ memicon:buttons( cpuwidget:buttons() )
 
 -- {{{ Net usage
 local netwidget = wibox.widget.textbox()
-local neticon  = wibox.widget.imagebox()
-neticon:set_image(icon_path.."netio.png")
+local neticon = conkyicon("i")
 -- list all ethernet and wlan devices (including usb tethering)
 vicious.register(netwidget, vicious.widgets.net,
 function (widget, args)
@@ -477,11 +503,11 @@ neticon:buttons( netwidget:buttons() )
 -- }}}
 
 -- {{{ Disk I/O
-local ioicon = wibox.widget.imagebox()
-ioicon:set_image(icon_path.."disk.png")
-ioicon.visible = true
+local ioicon = conkyicon("K")
+--ioicon:set_image(icon_path.."disk.png")
+--ioicon.visible = true
 local iowidget = wibox.widget.textbox()
-vicious.register(iowidget, vicious.widgets.dio, "SSD ${sda read_mb}/${sda write_mb}MB", 7)
+vicious.register(iowidget, vicious.widgets.dio, "SSD ${sda read_mb}/${sda write_mb}MB (${sda iotime_s}s)", 7)
 -- Register buttons
 iowidget:buttons( awful.button({ }, 1, function () awful.util.spawn(terminal .. " -e sudo iotop") end) )
 -- }}}
@@ -508,7 +534,8 @@ function(widget, args)
     pkgicon.visible = true
     return markup.urgent("<b>Updates</b> "..args[1]).." "
  end
-end, 180, "Arch")
+end, 1, "Arch")
+vicious.register(pkgwidget, vicious.widgets.pkg, " Updates: $1", 1, "Arch")
 
 pkgwidget:buttons( awful.button({ }, 1,
 function ()
@@ -521,8 +548,7 @@ pkgicon:buttons( pkgwidget:buttons() )
 
 -- {{{ MPD
 local wimpc = wibox.widget.textbox()
-local mpcicon = wibox.widget.imagebox()
-mpcicon:set_image(icon_path.."music.png")
+local mpcicon = nerdfonts("")
 mpc.attach(wimpc)
 
 -- Register Buttons in both widget
@@ -537,17 +563,17 @@ awful.button({ }, 5, function () mpc:seek(-5) mpc:update()           end)  -- sc
 
 --{{{ Wifi
 local wifiwidget = wibox.widget.textbox()
-local wifiicon   = wibox.widget.imagebox()
+local wifiicon   = nerdfonts("")
 local wifitooltip= awful.tooltip({})
 wifitooltip:add_to_object(wifiwidget)
-wifiicon:set_image(icon_path.."wifi.png")
 vicious.register(wifiwidget, vicious.widgets.wifiiw, function(widget, args)
    local tooltip = ("<b>mode</b> %s <b>chan</b> %s <b>rate</b> %s Mb/s"):format(
                    args["{mode}"], args["{chan}"], args["{rate}"])
    local quality = args["{linp}"]
    wifitooltip:set_markup(tooltip)
    local name = awful.util.escape(args["{ssid}"])
-   return ("%s: %.1f%%"):format(name, quality)
+   --return ("%s: .1f%%"):format(name, quality)
+   return ("%s:"):format(name)
 end, 5, "wlp3s0")
 wifiicon:buttons( wifiwidget:buttons(awful.util.table.join(
    awful.button({}, 1, function()
@@ -572,6 +598,10 @@ end), -- left click
 awful.button({ }, 3, function ()  vicious.force{wifiwidget} end) -- right click
 )))
 --}}}
+
+local btcwidget = wibox.widget.textbox()
+local btcicon = nerdfonts("")
+vicious.register(btcwidget, vicious.contrib.btc, "${price}£", 1800, "GBP")
 -- }}}
 
 -- {{{ Wibox
@@ -690,6 +720,8 @@ for s = 1, screen.count() do
   left_layout2:add(iowidget)
   left_layout2:add(neticon)
   left_layout2:add(netwidget)
+  left_layout2:add(btcicon)
+  left_layout2:add(btcwidget)
 
   local right_layout2 = wibox.layout.fixed.horizontal()
   right_layout2:add(mpcicon)
@@ -816,7 +848,7 @@ globalkeys = awful.util.table.join(
     -- Prompt
     --awful.key({ modkey },            "r",     function () awful.screen.focused().mypromptbox:run() end,
     --          {description = "run prompt", group = "launcher"}),
-    awful.key({ modkey }, "r", function () awful.util.spawn("valauncher") end),
+    --awful.key({ modkey }, "r", function () awful.util.spawn("albert") end),
     awful.key({ modkey }, "x",
               function ()
                   awful.prompt.run {
