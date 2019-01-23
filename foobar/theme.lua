@@ -20,7 +20,7 @@ if awful.util.file_readable("/run/current-system/sw/bin/awesome") then
 end
 --}}}
 
-theme.font    = "Inconsolata Nerd Font Mono 14"
+theme.font    = "SauceCodePro Nerd Font Mono Regular 12"
 
 theme.bg_normal     = "#333333"
 theme.bg_focus      = "#1793d1"

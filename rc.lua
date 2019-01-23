@@ -85,7 +85,7 @@ local spawn_with_systemd = function(app)
 end
 local terminal   = "alacritty"
 local editor     = os.getenv("EDITOR") or "vim"
-local browser    = "chromium"
+local browser    = "firefox"
 local mail       = "thunderbird"
 local editor_cmd = terminal.." -e "..editor
 
@@ -132,8 +132,7 @@ tyrannical.tags = {
     screen = 1,
     layout = awful.layout.suit.tile,
     exec_once = { browser },
-    class = { "Firefox", "Opera", "Chromium", "Aurora", "birdie",
-      "Thunderbird", "evolution", "chromium-browser" },
+    class = { "Firefox", "Opera", "Chromium", "Aurora", "chromium-browser" },
   },
   {
     name = "2:dev",
@@ -141,10 +140,10 @@ tyrannical.tags = {
     exclusive = true,
     init = true,
     screen = 1,
-    layout = awful.layout.suit.tile,
+    layout = awful.layout.suit.max,
     exec_once = { terminal },
     class       = {
-      "xterm" , "urxvt" , "aterm", "URxvt", "XTerm", "alacritty"
+      "xterm" , "urxvt" , "aterm", "URxvt", "XTerm", "alacritty", "emacs"
     },
     match       = {
       "konsole"
@@ -158,7 +157,9 @@ tyrannical.tags = {
     init = true,
     layout = awful.layout.suit.tile,
     --exec_once = { "gajim" },
-    class = { "Kopete", "Pidgin", "gajim", "Dino", ".gajim-wrapped", "rambox" }
+    class = { "Kopete", "Pidgin", "gajim", "Dino", ".gajim-wrapped", "rambox",
+              "Daily", -- thunderbird
+              "Thunderbird", "birdie", "evolution" }
   },
   {
     name = "4:doc",
@@ -203,15 +204,6 @@ tyrannical.tags = {
     class = { "pcmanfm", "dolphin", "nautilus", "thunar" }
   },
   {
-    name = "e:macs",
-    position = 8,
-    exclusive = true,
-    init = false,
-    layout = awful.layout.suit.tile,
-    exec_once = { "emacs" },
-    class = { "emacs" }
-  },
-  {
     name = "a:rio",
     position = 9,
     exclusive = true,
@@ -247,7 +239,7 @@ tyrannical.properties.ontop = {
 }
 
 tyrannical.properties.floating = {
-  "MPlayer", "pinentry"
+  "MPlayer", "pinentry", "yubioath-desktop"
 }
 
 full_screen_apps = {"Firefox", "Opera", "Chromium", "Aurora", "Thunderbird", "evolution"}
@@ -282,7 +274,7 @@ local myawesomemenu = {
 }
 
 local mymainmenu = awful.menu({ items = {
-  { "awesome", myawesomemenu, beautiful.awesome_icon },
+  { "awesome", myawesomemenu, gears.filesystem.get_themes_dir() .. beautiful.awesome_icon },
   { "open terminal", terminal },
   { "Firefox", spawn_with_systemd("firefox") },
   { "Bildschirmsperre", "slimlock" },
@@ -292,8 +284,10 @@ local mymainmenu = awful.menu({ items = {
   { "Herunterfahren", "systemctl poweroff", icon_path.."poweroff.png" },
 }})
 
-local mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
-menu = mymainmenu })
+local mylauncher = awful.widget.launcher({
+  image = beautiful.awesome_icon,
+  menu = mymainmenu
+})
 -- }}}
 
 -- {{{ Naughty log notify
@@ -335,7 +329,7 @@ end
 
 -- {{{ Date and time
 -- Create a textclock widget
-local mytextclock = awful.widget.textclock()
+local mytextclock = wibox.widget.textclock()
 local clockicon = nerdfonts("")
 -- Register calendar tooltip
 -- To use fg_focus, you have to set a different tooltip_fg_color since the
@@ -358,10 +352,10 @@ local batwidget = wibox.widget.textbox()
 local bat2widget = wibox.widget.textbox()
 
 local baticon = nerdfonts("")
-local pulsebox    = wibox.layout.margin(pulsebar, 2, 2, 4, 4)
+local pulsebox    = wibox.container.margin(pulsebar, 2, 2, 4, 4)
 
---vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT1")
---vicious.register(bat2widget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT0")
+vicious.register(batwidget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT1")
+vicious.register(bat2widget, vicious.widgets.bat, "$1$2% $3h", 7, "BAT0")
 -- }}}
 
 --{{{ Pulseaudio
@@ -392,7 +386,7 @@ local pulsebox = wibox.widget {
     color         = beautiful.fg_widget,
     layout        = wibox.container.rotate,
 }
-local pulsebox = wibox.layout.margin(pulsebox, 1, 1, 3, 3)
+local pulsebox = wibox.container.margin(pulsebox, 1, 1, 3, 3)
 
 -- Enable caching
 vicious.cache(vicious.contrib.pulse)
@@ -400,20 +394,23 @@ vicious.cache(vicious.contrib.pulse)
 local audio_card = {"Master", "-D", "pulse"}
 
 local function pulse_volume(delta)
-  -- vicious.contrib.pulse.add(delta, audio_card)
+  awful.util.spawn("amixer")
   vicious.force({ pulsewidget, pulsebar})
 end
 
 local function pulse_toggle()
-  -- vicious.contrib.pulse.toggle(audio_card)
+  awful.util.spawn("amixer -q sset Master -D pulse toggle")
   vicious.force({ pulsewidget, pulsebar})
 end
 
 vicious.register(pulsebar, vicious.widgets.volume, "$1", 7, audio_card)
-vicious.register(pulsewidget, vicious.widgets.volume,
-  function (widget, args)
-    return string.format("%.f%%", args[1])
-  end, 7, audio_card)
+vicious.register(pulsewidget, vicious.widgets.volume, function (widget, args)
+  s = string.format("%.f%%", args[1])
+  if args[2] == "♩" then -- mute
+    return "<span strikethrough='true' strikethrough_color='" .. beautiful.fg_normal .. "'>"..s.."</span>"
+  end
+  return s
+end, 7, audio_card)
 
 pulsewidget:buttons(awful.util.table.join(
   awful.button({ }, 1, function() awful.util.spawn("pavucontrol") end), --left click
@@ -424,7 +421,6 @@ pulsewidget:buttons(awful.util.table.join(
 pulsebar:buttons(pulsewidget:buttons())
 pulseicon:buttons(pulsewidget:buttons())
 --}}}
-
 
 -- {{{ CPU usage
 local cpuwidget = wibox.widget.textbox()
@@ -485,7 +481,7 @@ vicious.register(netwidget, vicious.widgets.net,
 function (widget, args)
  local down, up
  for k, v in pairs(args) do
-   local dev = k:match("^{enp[^ ]+") or k:match("^{wlp[^ ]+")
+   local dev = k:match("^{eth[^ ]+") or k:match("^{wlan[^ ]+")
    if dev ~= nil then
      down, up = args[dev.." down_kb}"], args[dev.." up_kb}"]
      if (down ~= "0.0" and down ~= nil) or (up ~= "0.0" and up ~= nil) then
@@ -677,7 +673,7 @@ for s = 1, screen.count() do
   -- Create a tasklist widget
   mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
   -- Create the wibox
-  mywibox[s] = awful.wibox({ position = "top", screen = s })
+  mywibox[s] = awful.wibar({ position = "top", screen = s })
 
   local left_layout = wibox.layout.fixed.horizontal()
   left_layout:add(mylauncher)
@@ -705,7 +701,7 @@ for s = 1, screen.count() do
 
   mywibox[s]:set_widget(layout)
 
-  mystatusbox[s] = awful.wibox({ position = "bottom", screen = s })
+  mystatusbox[s] = awful.wibar({ position = "bottom", screen = s })
   local left_layout2 = wibox.layout.fixed.horizontal()
 
   left_layout2:add(testwidget)
@@ -814,6 +810,9 @@ globalkeys = awful.util.table.join(
               {description = "open a terminal", group = "launcher"}),
     awful.key({ modkey, "Control" }, "r", awesome.restart,
               {description = "reload awesome", group = "awesome"}),
+    -- this also locks the screen because of xss-lock
+    awful.key({ modkey, "Control" }, "l", function() awful.util.spawn("xset dpms force standby") end,
+              {description = "blank screen ", group = "launcher"}),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit,
               {description = "quit awesome", group = "awesome"}),
 
@@ -848,7 +847,7 @@ globalkeys = awful.util.table.join(
     -- Prompt
     --awful.key({ modkey },            "r",     function () awful.screen.focused().mypromptbox:run() end,
     --          {description = "run prompt", group = "launcher"}),
-    --awful.key({ modkey }, "r", function () awful.util.spawn("albert") end),
+    awful.key({ modkey }, "r", function () awful.util.spawn("rofi -show run -modi run") end),
     awful.key({ modkey }, "x",
               function ()
                   awful.prompt.run {
@@ -1104,5 +1103,11 @@ naughty.notify{
 
 -- Java helper
 awful.util.spawn("wmname LG3D")
+awful.util.spawn(spawn_with_systemd("rambox"))
+awful.util.spawn(spawn_with_systemd("dino"))
+awful.util.spawn(spawn_with_systemd("thunderbird"))
+awful.util.spawn(spawn_with_systemd("firefox"))
+awful.util.spawn("systemctl --user import-environment XDG_SESSION_PATH")
+awful.util.spawn(spawn_with_systemd("light-locker"))
 
 -- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=2:tabstop=2:softtabstop=2:textwidth=80
